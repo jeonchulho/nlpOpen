@@ -15,6 +15,7 @@ def run_benchmark(
     golden: str,
     split_by_verb: bool,
     extra_rules_file: str,
+    rules_config_file: str,
     ollama_base_url: str,
     use_instructor: bool,
     use_guardrails: bool,
@@ -30,6 +31,7 @@ def run_benchmark(
                 golden_path=golden,
                 model=model,
                 extra_rules_file=extra_rules_file,
+                rules_config_file=rules_config_file,
                 provider=provider,
                 ollama_base_url=ollama_base_url,
                 use_instructor=use_instructor,
@@ -44,6 +46,7 @@ def run_benchmark(
                 golden_path=golden,
                 model=model,
                 extra_rules_file=extra_rules_file,
+                rules_config_file=rules_config_file,
                 provider=provider,
                 ollama_base_url=ollama_base_url,
                 use_instructor=use_instructor,
@@ -100,7 +103,7 @@ def cli() -> None:
     parser.add_argument(
         "--provider",
         default="ollama",
-        choices=["openai", "ollama", "litellm"],
+        choices=["openai", "ollama", "litellm", "spacy"],
         help="LLM provider",
     )
     parser.add_argument(
@@ -111,6 +114,11 @@ def cli() -> None:
     parser.add_argument("--golden", default="data/golden_set_verb_12.jsonl", help="Path to golden JSONL")
     parser.add_argument("--split-by-verb", action="store_true", help="Use split-by-verb evaluation")
     parser.add_argument("--extra-rules-file", default="", help="Optional tuned rules file path")
+    parser.add_argument(
+        "--rules-config-file",
+        default="",
+        help="Optional JSON config path for dynamic extraction rules",
+    )
     parser.add_argument(
         "--ollama-base-url",
         default="http://localhost:11434",
@@ -148,6 +156,7 @@ def cli() -> None:
         golden=args.golden,
         split_by_verb=args.split_by_verb,
         extra_rules_file=args.extra_rules_file,
+        rules_config_file=args.rules_config_file,
         ollama_base_url=args.ollama_base_url,
         use_instructor=args.use_instructor,
         use_guardrails=args.use_guardrails,

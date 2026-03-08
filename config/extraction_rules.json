@@ -1,0 +1,412 @@
+{
+  "subject_by_lang": {
+    "ko": ["고객"],
+    "en": ["customer"],
+    "ja": ["customer"],
+    "zh": ["customer"],
+    "ar": ["customer"],
+    "de": ["customer"],
+    "fr": ["customer"]
+  },
+  "subject_picker_rules_by_lang": {
+    "ko": {
+      "topic_pattern": "([가-힣A-Za-z0-9\\s]{1,30}?)(?:은|는|이|가)\\s",
+      "topic_exclude": ["고객", "상담원"],
+      "predicate_verb_keywords": ["가능", "되나요", "됩니다", "실패", "반복", "중단", "도착", "올라가", "오지", "오나요", "잠기"],
+      "object_suffix_subject_overrides": {
+        "배송": "배송"
+      },
+      "object_skip_values": ["요청 대상", "request target", "target"]
+    }
+  },
+  "spacy_only_confidence": 0.72,
+  "spacy_only_multi_confidence": 0.7,
+   "summarize_hint_keywords": {
+    "default": ["summar", "résum", "resum"],
+    "ko": ["정리", "요약", "축약"],
+    "ja": ["整理", "要約"],
+    "zh": ["整理"],
+    "de": ["zusammenfass"],
+    "fr": ["résum", "resum"],
+    "ar": ["تلخيص"]
+  },
+  "summarize_verb_by_lang": {
+    "ko": ["정리해서", "요약", "축약"],
+    "en": ["summarize", "summarise"],
+    "ja": ["要約", "整理", "まとめ"],
+    "zh": ["总结", "整理", "汇总"],
+    "ar": ["تلخيص", "لخص"],
+    "de": ["zusammenfassen", "zusammenfassung"],
+    "fr": ["résumer", "resume"]
+  },
+  "summarize_object_rules_by_lang": {
+    "ko": [["(?=.*쪽지)(?=.*보낸)", "쪽지"], ["쪽지", "쪽지"], ["메시지", "메시지"]],
+    "en": [["message", "message"], ["email", "email"], ["chat", "chat message"]],
+    "ja": [["メッセージ", "メッセージ"], ["メール", "メール"]],
+    "zh": [["消息", "消息"], ["邮件", "邮件"]],
+    "ar": [["رسالة", "رسالة"], ["بريد", "بريد"]],
+    "de": [["Nachricht", "Nachricht"], ["E-Mail", "E-Mail"]],
+    "fr": [["message", "message"], ["e-mail|mail", "e-mail"]]
+  },
+  "verb_patterns_by_lang": {
+    "ko": [
+      "보내\\s*주세요",
+      "보내줘",
+      "전달해\\s*줘",
+      "전달해\\s*주세요",
+      "발송해\\s*줘",
+      "발송해\\s*주세요",
+      "보내",
+      "요약해\\s*줘",
+      "요약해\\s*주세요",
+      "요약해서",
+      "축약해\\s*줘",
+      "축약해\\s*주세요",
+      "축약해서",
+      "취소하겠습니다",
+      "취소해\\s*주세요",
+      "변경해\\s*주세요",
+      "수정해\\s*주세요",
+      "정리해서",
+      "취소해\\s*줘",
+      "변경하고\\s*싶어요",
+      "바꾸고\\s*싶습니다",
+      "설정해\\s*주세요",
+      "알려\\s*주세요",
+      "발급해\\s*주세요",
+      "배송해\\s*주세요",
+      "재발행해\\s*주세요",
+      "문의해\\s*주세요",
+      "면제해\\s*주세요",
+      "가능한가요",
+      "가능합니까",
+      "가능합니다",
+      "됩니다",
+      "되나요",
+      "안\\s*되나요",
+      "잠기나요",
+      "오나요",
+      "오지\\s*않습니다",
+      "실패합니다",
+      "반복됩니다",
+      "중단됩니다",
+      "지연됩니다",
+      "도착하나요",
+      "올라가나요",
+      "인정되나요",
+      "사용되나요",
+      "부탁드립니다"
+    ],
+    "ja": ["送って", "送信", "送付", "キャンセル", "変更", "修正", "まとめて", "要約"],
+    "zh": ["发送", "发给", "取消", "整理", "汇总", "修改", "更新"],
+    "ar": ["أرسل", "إرسال", "إلغاء", "تلخيص", "تحديث", "تعديل", "إعادة إرسال"],
+    "de": ["senden", "schicken", "versenden", "stornieren", "zusammenfassen", "aktualisieren", "ändern"],
+    "fr": ["envoyer", "annuler", "résumer", "mettre à jour", "modifier", "transférer"],
+    "en": ["send", "forward", "dispatch", "cancel", "summari[sz]e", "update", "modify", "refund"]
+  },
+  "default_verb_by_lang": {
+    "ko": ["요청"],
+    "ja": ["依頼"],
+    "zh": ["请求"],
+    "ar": ["طلب"],
+    "de": ["anfrage"],
+    "fr": ["demande"],
+    "en": ["request", "ask"]
+  },
+  "object_rules_by_lang": {
+    "ko": [
+      ["(?=.*쪽지)(?=.*정리)", "쪽지 정리본"],
+      ["쪽지", "쪽지"],
+      ["이메일", "이메일"],
+      ["메일", "메일"],
+      ["문자", "문자"],
+      ["채팅", "채팅 메시지"],
+      ["배송지", "배송지"],
+      ["주소", "주소"],
+      ["결제", "결제"],
+      ["환불", "환불"],
+      ["구독", "구독"],
+      ["보고서", "보고서"],
+      ["첨부", "첨부파일"],
+      ["노트북\\s*배송지", "노트북 배송지"],
+      ["배송지\\s*주소", "배송지 주소"],
+      ["자동이체일", "자동이체일"],
+      ["정기결제\\s*해지\\s*신청", "정기결제 해지 신청"],
+      ["세금계산서", "세금계산서"],
+      ["영수증", "영수증"],
+      ["견적서", "견적서"],
+      ["설치\\s*기사\\s*방문\\s*시간", "설치 기사 방문 시간"],
+      ["고객센터\\s*전화\\s*연결", "고객센터 전화 연결"],
+      ["배송\\s*추적\\s*푸시", "배송 추적 푸시"],
+      ["반품", "반품 신청"],
+      ["자동\\s*출금", "자동 출금"],
+      ["자동\\s*갱신", "자동 갱신 차단"],
+      ["사은품", "사은품"],
+      ["장바구니", "장바구니"],
+      ["앱", "앱"],
+      ["쿠폰", "쿠폰"],
+      ["비밀번호", "비밀번호"],
+      ["계정\\s*복구", "계정 복구"],
+      ["계정", "계정"],
+      ["고장\\s*접수", "고장 접수"],
+      ["서비스", "서비스"],
+      ["제주도\\s*배송", "제주도 배송"],
+      ["출고", "출고"],
+      ["제작", "제작"],
+      ["(?=.*주문)(?=.*전부)", "주문 전부"],
+      ["주문", "주문"]
+    ],
+    "en": [
+      ["message", "summarized message"],
+      ["email", "email"],
+      ["chat", "chat message"],
+      ["delivery address|shipping address", "delivery address"],
+      ["payment", "payment"],
+      ["refund", "refund"],
+      ["subscription", "subscription"],
+      ["report", "report"],
+      ["attachment", "attachment"],
+      ["invoice", "invoice"],
+      ["order", "order"]
+    ],
+    "ja": [
+      ["メッセージ", "まとめたメッセージ"],
+      ["メール", "メール"],
+      ["住所", "住所"],
+      ["配送先", "配送先"],
+      ["支払い", "支払い"],
+      ["返金", "返金"],
+      ["レポート", "レポート"],
+      ["添付", "添付ファイル"],
+      ["注文", "注文"]
+    ],
+    "zh": [
+      ["消息", "整理后的消息"],
+      ["邮件", "邮件"],
+      ["地址", "地址"],
+      ["配送地址|收货地址", "配送地址"],
+      ["支付", "支付"],
+      ["退款", "退款"],
+      ["报告", "报告"],
+      ["附件", "附件"],
+      ["订单", "订单"]
+    ],
+    "ar": [
+      ["رسالة", "الرسالة الملخصة"],
+      ["بريد", "البريد"],
+      ["عنوان", "العنوان"],
+      ["الدفع", "الدفع"],
+      ["استرداد", "الاسترداد"],
+      ["اشتراك", "الاشتراك"],
+      ["تقرير", "التقرير"],
+      ["مرفق", "المرفق"],
+      ["طلب", "طلب"]
+    ],
+    "de": [
+      ["Nachricht", "zusammengefasste Nachricht"],
+      ["E-Mail", "E-Mail"],
+      ["Adresse|Lieferadresse", "Lieferadresse"],
+      ["Zahlung", "Zahlung"],
+      ["Rückerstattung", "Rückerstattung"],
+      ["Bericht", "Bericht"],
+      ["Anhang", "Anhang"],
+      ["Bestellung", "Bestellung"]
+    ],
+    "fr": [
+      ["message", "message résumé"],
+      ["e-mail|mail", "e-mail"],
+      ["adresse|adresse de livraison", "adresse de livraison"],
+      ["paiement", "paiement"],
+      ["remboursement", "remboursement"],
+      ["abonnement", "abonnement"],
+      ["rapport", "rapport"],
+      ["pièce jointe", "pièce jointe"],
+      ["commande", "commande"]
+    ]
+  },
+  "default_object_by_lang": {
+    "ko": ["요청 대상"],
+    "ja": ["依頼対象"],
+    "zh": ["请求对象"],
+    "ar": ["هدف الطلب"],
+    "de": ["Anfrageobjekt"],
+    "fr": ["objet de la demande"],
+    "en": ["request target", "target"]
+  },
+  "manner_tokens_by_lang": {
+    "ko": ["쪽지로", "문자로", "이메일로", "메일로", "PDF로", "엑셀로", "첨부로", "슬랙으로"],
+    "en": ["by email", "via message", "via chat", "in pdf", "as attachment", "through slack"],
+    "ja": ["メールで", "メッセージで", "PDFで", "添付で"],
+    "zh": ["通过消息", "通过邮件", "以PDF", "附件形式"],
+    "ar": ["بواسطة رسالة", "عبر البريد", "بصيغة PDF", "كمرفق"],
+    "de": ["per E-Mail", "per Nachricht", "als PDF", "im Anhang"],
+    "fr": ["par message", "par e-mail", "en PDF", "en pièce jointe"]
+  },
+  "time_patterns_common": [
+    "\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s*[~\\-]\\s*\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}",
+    "\\d{4}년\\s*\\d{1,2}월\\s*\\d{1,2}일\\s*[~\\-]\\s*\\d{4}년\\s*\\d{1,2}월\\s*\\d{1,2}일",
+    "\\d{4}년\\s*\\d{1,2}월\\s*\\d{1,2}일\\s*부터\\s*\\d{4}년\\s*\\d{1,2}월\\s*\\d{1,2}일\\s*까지",
+    "(?:from|du|von|من)\\s*\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s*(?:to|au|bis|إلى)\\s*\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}",
+    "\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s*(?:부터|から|到|至|الى|إلى)\\s*\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}"
+  ],
+  "time_patterns_by_lang": {
+    "ko": ["\\d{4}년\\s*\\d{1,2}월\\s*\\d{1,2}일\\s*이후", "어제", "그제", "오늘", "내일", "모레", "이번 주", "다음 주", "이번 달", "다음 달", "금요일까지", "(?:월|화|수|목|금|토|일)요일", "(?:월|화|수|목|금|토|일)(?:요일)?(?:\\s*,\\s*(?:월|화|수|목|금|토|일)(?:요일)?)+", "(?:(?<=^)|(?<=[\\s,]))(?:월|화|수|목|금|토|일)(?=(?:[\\s,]|$|에|은|는|부터|까지))", "\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s*부터\\s*\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s*까지"],
+    "en": ["yesterday", "today", "tomorrow", "this week", "next week", "this month", "next month", "by friday", "from\\s+\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s+to\\s+\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}"],
+    "ja": ["昨日", "今日", "明日", "今週", "来週", "今月", "来月", "金曜日まで", "\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}から\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}まで"],
+    "zh": ["昨天", "今天", "明天", "本周", "下周", "本月", "下个月", "周五之前", "\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}到\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}"],
+    "ar": ["أمس", "اليوم", "غدًا|غدا", "هذا الأسبوع", "الأسبوع القادم", "هذا الشهر", "الشهر القادم", "من\\s*\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s*إلى\\s*\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}"],
+    "de": ["gestern", "heute", "morgen", "diese woche", "nächste woche", "diesen monat", "nächsten monat", "bis freitag", "von\\s+\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s+bis\\s+\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}"],
+    "fr": ["hier", "aujourd'hui", "demain", "cette semaine", "la semaine prochaine", "ce mois-ci", "le mois prochain", "d'ici vendredi", "du\\s+\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}\\s+au\\s+\\d{4}[\\-/\\.]\\d{1,2}[\\-/\\.]\\d{1,2}"]
+  },
+  "time_case_insensitive_langs": ["en", "de", "fr"],
+  "spacy_refine_action_excluded_types": ["time", "location", "reason", "constraint"],
+  "action_scope_patterns_by_lang": {
+    "ko": {
+      "sender": ["([가-힣]{2,4})가\\s+보낸"],
+      "receiver_names": ["([가-힣]{2,4})\\s*,\\s*[가-힣A-Za-z0-9]+(?:팀|부|본부|센터|실|그룹)\\s*에게", "([가-힣]{2,4})에게"],
+      "receiver_departments": ["([가-힣A-Za-z0-9]+(?:팀|부|본부|센터|실|그룹))\\s*에게", "([가-힣A-Za-z0-9]+(?:팀|부|본부|센터|실|그룹))\\s*에"]
+    },
+    "ja": {
+      "sender": ["(?:の)?([\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFF]{2,12})が(?:送った|送信した)"],
+      "receiver_names": ["([\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFF]{2,12})\\s*、\\s*[\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFFA-Za-z0-9]+(?:部|チーム|本部|センター)に", "を([\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFF]{2,8})に送", "([\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFF]{2,8})と[\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFFA-Za-z0-9]+(?:部|チーム|本部|センター)に送"],
+      "receiver_departments": ["([\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFFA-Za-z0-9]+(?:部|チーム|本部|センター))に"]
+    },
+    "zh": {
+      "sender": ["([\\u4E00-\\u9FFF]{2,8})(?:发送的|发来的|发送)"],
+      "receiver_names": ["给([\\u4E00-\\u9FFF]{2,8})和[\\u4E00-\\u9FFFA-Za-z0-9]+(?:部|团队|小组)", "(?:发送给|发给|给)([\\u4E00-\\u9FFF]{2,8})(?:。|\\s|$)"],
+      "receiver_departments": ["(?:给|和)([\\u4E00-\\u9FFFA-Za-z0-9]{1,12}(?:部|团队|小组))"]
+    },
+    "en": {
+      "sender": ["([A-Z][a-z]+)\\s+(?:sent|has sent)"],
+      "receiver_names": ["to\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)"],
+      "receiver_departments": ["([A-Za-z]+(?:\\s+[A-Za-z]+)?\\s+(?:team|department|division))"]
+    },
+    "de": {
+      "sender": ["([A-ZÄÖÜ][a-zäöüß]+)\\s+(?:gesendet|schickte|versendet)"],
+      "receiver_names": ["an\\s+([A-ZÄÖÜ][a-zäöüß]+(?:\\s+[A-ZÄÖÜ][a-zäöüß]+)?)"],
+      "receiver_departments": ["an\\s+(?:das|den|die)?\\s*([A-Za-zÄÖÜäöüß-]+(?:team|abteilung))", "(?:das|den|die)?\\s*([A-Za-zÄÖÜäöüß]+(?:\\s+[A-Za-zÄÖÜäöüß]+)?\\s+(?:team|abteilung))"]
+    },
+    "fr": {
+      "sender": ["([A-ZÉÈÊÀÂÎÔÛÇ][a-zéèêàâîôûç]+)\\s+(?:a\\s+envoyé|a\\s+transmis)"],
+      "receiver_names": ["(?:à|a)\\s+([A-ZÉÈÊÀÂÎÔÛÇ][a-zéèêàâîôûç]+(?:\\s+[A-ZÉÈÊÀÂÎÔÛÇ][a-zéèêàâîôûç]+)?)"],
+      "receiver_departments": ["(?:l[ae]'\\s*)?([A-Za-zÉÈÊÀÂÎÔÛÇéèêàâîôûç]+(?:\\s+[A-Za-zÉÈÊÀÂÎÔÛÇéèêàâîôûç]+)?\\s+(?:équipe|département|service))", "(?:a|à)\\s+l?'?\\s*([A-Za-z]+\\s+(?:equipe|service|departement))", "(?:a|à)\\s+l?'?\\s*((?:equipe|service|departement)\\s+[A-Za-z]+)"]
+    },
+    "ar": {
+      "sender": ["(?:التي\\s+)?(?:أرسلها|أرسل)\\s+([\\u0600-\\u06FF]{2,20})"],
+      "receiver_names": ["إلى\\s+([\\u0600-\\u06FF]{2,20})"],
+      "receiver_departments": ["(?:فريق|قسم)\\s+([\\u0600-\\u06FF]{2,20})"]
+    }
+  },
+  "action_scope_verb_hints": {
+    "summarize": ["정리", "요약", "축약", "summar", "整理", "تلخيص", "zusammen", "résum"],
+    "send": ["보내", "전달", "send", "sent", "送", "发送", "إرسال", "schick", "senden", "envoy"]
+  },
+  "action_scope_cleanup": {
+    "ja_split_delimiter": "の",
+    "zh_department_split_delimiter": "和",
+    "zh_department_suffix_pattern": "(?:部|团队|小组)$"
+  },
+  "object_detail_rules_by_lang": {
+    "ko": {
+      "command_hint": "(?:요약(?:해|해서)?|정리(?:해|해서)?|보내(?:줘|주세요)?|전달(?:해|해줘|해주세요)?|발송(?:해|해줘|해주세요)?|공유(?:해|해줘|해주세요)?|확인(?:해|해줘|해주세요)?)",
+      "patterns": [
+        "([가-힣A-Za-z0-9]{2,12}(?:가|이)\\s+[가-힣]{1,15}(?:한|은|는|던|된)\\s+[가-힣A-Za-z0-9]{1,20}(?:\\s+[가-힣A-Za-z0-9]{1,20})?)(?=\\s+{command_hint})",
+        "([가-힣]{1,15}(?:한|은|는|던|된)\\s+[가-힣A-Za-z0-9]{1,20}(?:\\s+[가-힣A-Za-z0-9]{1,20})?)(?=\\s+{command_hint})",
+        "([가-힣A-Za-z0-9]{2,12}(?:가|이)\\s+보낸\\s+(?:채팅|쪽지|메시지|메일|이메일))",
+        "((?:보낸|받은|작성한|정리한)\\s+(?:채팅|쪽지|메시지|메일|이메일))"
+      ]
+    },
+    "en": {
+      "command_hint": "(?:summari[sz]e|send|forward|dispatch|share|review|check)",
+      "patterns": [
+        "((?:message|messages|email|emails|chat(?:\\s+messages?)?)\\s+[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?\\s+(?:sent|received|written)(?:\\s+(?:yesterday|today|tomorrow))?)(?=\\s+(?:and\\s+)?{command_hint})",
+        "([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?\\s+(?:sent|received|written)\\s+(?:message|messages|email|emails|chat(?:\\s+messages?)?))(?=\\s+(?:and\\s+)?{command_hint})",
+        "((?:important|urgent|latest)\\s+[A-Za-z][A-Za-z\\s]{1,20})(?=\\s+{command_hint})"
+      ]
+    }
+  },
+  "object_phrase_fallback_by_lang": {
+    "ko": {
+      "capture_pattern": "([가-힣A-Za-z0-9\\s,~\\-]{1,50}?)(?:을|를)\\s+[가-힣A-Za-z0-9]+",
+      "strip_prefix_pattern": "^(?:(?:월|화|수|목|금|토|일)(?:요일)?(?:\\s*,\\s*(?:월|화|수|목|금|토|일)(?:요일)?)*|[0-9년월일\\-\\./~\\s]+)에\\s+",
+      "head_suffix_map": {
+        " 일정": "일정"
+      }
+    }
+  },
+  "additional_condition_patterns_by_lang": {
+    "ko": [
+      ["reason", "([가-힣A-Za-z0-9\\s]+(?:때문에|라서))"],
+      ["constraint", "([가-힣A-Za-z0-9\\s]+(?:한해서|이내(?:에만)?|이상(?:일 때만)?|이하|상태에서만|경우에만|후에만|때만))"],
+      ["constraint", "([가-힣A-Za-z0-9\\s]+(?:이면|하면))"],
+      ["location", "([가-힣A-Za-z0-9\\s]+(?:에서만|에서|으로만|으로))"]
+    ]
+  },
+  "object_action_modifier_patterns_by_lang": {
+    "ko": "\\b([가-힣]+(?:은|는|한|된|던)|보낸|받은|작성한|정리한|확인한|첨부한|등록한|요청한|취소한|변경한|예약한|발송한|도착한)\\s+[가-힣]+",
+    "en": "\\b(sent|received|written|summarized|summarised|attached|registered|requested|canceled|cancelled|changed|scheduled|shipped|delivered|gesendet|gesandte|zusammengefasste|envoye|envoyee|resume|resumee|annule)\\b\\s+[A-Za-z]+",
+    "ja": "([\\u3040-\\u30FF\\u4E00-\\u9FFF]+(?:した|された|送った|送信した|作成した))",
+    "zh": "([\\u4E00-\\u9FFF]+(?:的|发送的|整理的| 작성的))",
+    "ar": "(المرسل|المستلم|الملخص|المرفق|المكتوب)"
+  },
+  "object_action_modifier_skip_tokens_by_lang": {
+    "ko": ["한", "된", "던", "는", "은"]
+  },
+  "object_action_modifier_action_tokens_by_lang": {
+    "ko": ["보낸", "받은", "작성한", "정리한", "확인한", "첨부한", "등록한", "요청한", "취소한", "변경한", "예약한", "발송한", "도착한"]
+  },
+  "object_action_modifier_attribute_suffixes_by_lang": {
+    "ko": ["한", "은", "는", "된", "던"]
+  },
+  "spacy_signal_patterns_by_lang": {
+    "ko": {
+      "person": "(?:^|\\s|,)([가-힣]{2,4})(?=(?:가|이|님|씨|에게|한테|께|의|\\s*,)\\b)",
+      "comma_name": "(?:^|\\s)([가-힣]{2,4})\\s*,\\s*[가-힣A-Za-z0-9]+(?:팀|부|본부|센터|실|그룹)",
+      "action": "([가-힣]+(?:해서|하고|해|한|하기|요청|부탁|보내줘|보내 주세요|보내))"
+    },
+    "ja": {
+      "person": "([\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFF]{2,12})(?=(?:が|さん|様|へ|に|の))",
+      "comma_name": "([\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFF]{2,12})\\s*、\\s*[\\u30A0-\\u30FF\\u3040-\\u309F\\u4E00-\\u9FFFA-Za-z0-9]+(?:部|チーム|本部|センター)",
+      "action": "(整理して|送って|送信|要約|キャンセル)"
+    },
+    "zh": {
+      "person": "([\\u4E00-\\u9FFF]{2,8})(?=(?:给|和|的|发送|发给))",
+      "comma_name": "([\\u4E00-\\u9FFF]{2,8})和[\\u4E00-\\u9FFFA-Za-z0-9]+(?:部|团队|小组)",
+      "action": "(整理|发送|取消|汇总)"
+    },
+    "en": {
+      "person": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\b",
+      "comma_name": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s*,\\s*[A-Za-z][A-Za-z\\s]+(?:team|department|division)\\b",
+      "action": "\\b(send|sent|cancel|summarize|summarise|整理|送信|发送|تلخيص|إرسال|stornieren|envoyer|résumer)\\b"
+    },
+    "de": {
+      "person": "\\b([A-ZÄÖÜ][a-zäöüß]+(?:\\s+[A-ZÄÖÜ][a-zäöüß]+)?)\\b",
+      "comma_name": "\\b([A-ZÄÖÜ][a-zäöüß]+(?:\\s+[A-ZÄÖÜ][a-zäöüß]+)?)\\s*,\\s*[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß\\s]+(?:team|abteilung)\\b",
+      "action": "\\b(senden|schicken|versenden|stornieren|zusammenfassen|aktualisieren|ändern)\\b"
+    },
+    "fr": {
+      "person": "\\b([A-ZÉÈÊÀÂÎÔÛÇ][a-zéèêàâîôûç]+(?:\\s+[A-ZÉÈÊÀÂÎÔÛÇ][a-zéèêàâîôûç]+)?)\\b",
+      "comma_name": "\\b([A-ZÉÈÊÀÂÎÔÛÇ][a-zéèêàâîôûç]+(?:\\s+[A-ZÉÈÊÀÂÎÔÛÇ][a-zéèêàâîôûç]+)?)\\s*,\\s*[A-Za-zÉÈÊÀÂÎÔÛÇéèêàâîôûç][A-Za-zÉÈÊÀÂÎÔÛÇéèêàâîôûç\\s]+(?:équipe|département|service)\\b",
+      "action": "\\b(envoyer|annuler|résumer|mettre\\s+à\\s+jour|modifier|transférer)\\b"
+    },
+    "ar": {
+      "person": "([\\u0600-\\u06FF]{2,20})(?=(?:\\s+إلى|\\s+و|\\s+الذي|\\s+التي|\\s+أرسل|\\s+أرسلت))",
+      "comma_name": "([\\u0600-\\u06FF]{2,20})\\s*،\\s*[\\u0600-\\u06FF\\s]+(?:فريق|قسم)",
+      "action": "(إرسال|أرسل|إلغاء|تلخيص|تحديث|تعديل|إعادة\\s+إرسال)"
+    }
+  },
+  "spacy_signal_dept_pattern": "([가-힣A-Za-z0-9\\u0600-\\u06FF][가-힣A-Za-z0-9\\u0600-\\u06FF\\s\\-]{0,40}(?:team|department|division|部|팀|부|本部|センター|グループ|équipe|département|abteilung|vertriebsteam|فريق|قسم))",
+  "spacy_signal_department_suffix_pattern_ja": "(部|チーム|本部|センター)$",
+  "spacy_signal_ja_person_prefixes": ["までの", "からの", "の"],
+  "spacy_signal_person_time_suffix_pattern": "(년|월|일|시|분|초)$",
+  "spacy_signal_latin_time_suffix_pattern": "(day|month|year|hour|minute|second)$"
+  ,"non_person_tokens_by_lang": {
+    "ko": ["배송", "주문", "결제", "환불", "구독", "주소", "보고서", "첨부", "채팅", "메시지", "이메일", "메일", "일정", "서비스", "계정", "쿠폰", "앱"],
+    "en": ["delivery", "order", "payment", "refund", "subscription", "address", "report", "attachment", "chat", "message", "email", "mail", "schedule", "service", "account", "coupon", "app"],
+    "ja": ["配送", "注文", "支払い", "返金", "住所", "報告書", "添付", "メッセージ", "メール", "予定", "サービス", "アカウント"],
+    "zh": ["配送", "订单", "支付", "退款", "地址", "报告", "附件", "消息", "邮件", "日程", "服务", "账号"],
+    "de": ["lieferung", "bestellung", "zahlung", "ruckerstattung", "adresse", "bericht", "anhang", "nachricht", "e-mail", "dienst", "konto"],
+    "fr": ["livraison", "commande", "paiement", "remboursement", "adresse", "rapport", "piece jointe", "message", "e-mail", "service", "compte"],
+    "ar": ["التوصيل", "الطلب", "الدفع", "الاسترداد", "العنوان", "التقرير", "المرفق", "الرسالة", "البريد", "الخدمة", "الحساب"]
+  }
+}

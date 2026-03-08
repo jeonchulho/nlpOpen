@@ -1,0 +1,49 @@
+{"id":"ex_ko_001","language":"ko","text":"어제 김민수가 보낸 쪽지를 요약해서 이선정, 영업팀에게 보내줘","tags":["summarize","send","person","department","time"]}
+{"id":"ex_ko_002","language":"ko","text":"이번 주 주문 내역을 정리해서 재무팀에 이메일로 전달해 주세요","tags":["summarize","send","department","manner","time"]}
+{"id":"ex_ko_003","language":"ko","text":"다음 달부터 구독을 취소해 주세요","tags":["cancel","time"]}
+{"id":"ex_ko_004","language":"ko","text":"배송지 주소를 오늘 안으로 변경해 주세요","tags":["update","address","time"]}
+{"id":"ex_ko_005","language":"ko","text":"보고서를 PDF로 축약해서 경영지원팀에게 발송해줘","tags":["summarize","send","manner","department"]}
+{"id":"ex_ko_006","language":"ko","text":"결제 오류 건 환불 요청을 모레까지 처리해 주세요","tags":["refund","time"]}
+{"id":"ex_ko_007","language":"ko","text":"채팅 메시지를 정리해서 슬랙으로 개발팀에 보내줘","tags":["summarize","send","manner","department"]}
+{"id":"ex_en_001","language":"en","text":"Summarize the messages John sent yesterday and forward them to Alice and the Sales team.","tags":["summarize","send","person","department","time"]}
+{"id":"ex_en_002","language":"en","text":"Please cancel my subscription by Friday.","tags":["cancel","time"]}
+{"id":"ex_en_003","language":"en","text":"Update the shipping address this week.","tags":["update","address","time"]}
+{"id":"ex_en_004","language":"en","text":"Send the report as attachment to Finance team.","tags":["send","report","manner","department"]}
+{"id":"ex_en_005","language":"en","text":"Summarise chat messages and dispatch them by email to Support division.","tags":["summarize","send","manner","department"]}
+{"id":"ex_en_006","language":"en","text":"Refund the payment and send the invoice to Emma.","tags":["refund","send","person"]}
+{"id":"ex_en_007","language":"en","text":"From 2026-02-10 to 2026-02-12, summarize all order messages.","tags":["summarize","time","order"]}
+{"id":"ex_ja_001","language":"ja","text":"昨日ジョンが送ったメッセージを要約して、アリスと営業部に送ってください。","tags":["summarize","send","person","department","time"]}
+{"id":"ex_ja_002","language":"ja","text":"今週中に注文をキャンセルしてください。","tags":["cancel","time"]}
+{"id":"ex_ja_003","language":"ja","text":"配送先住所を今日中に変更してください。","tags":["update","address","time"]}
+{"id":"ex_ja_004","language":"ja","text":"レポートをPDFで添付して経理チームに送信してください。","tags":["send","manner","department"]}
+{"id":"ex_ja_005","language":"ja","text":"チャットメッセージをまとめてサポート部に送付してください。","tags":["summarize","send","department"]}
+{"id":"ex_ja_006","language":"ja","text":"支払いを返金して、請求書を田中さんに送ってください。","tags":["refund","send","person"]}
+{"id":"ex_ja_007","language":"ja","text":"2026-02-10から2026-02-12までの注文メッセージを整理してください。","tags":["summarize","time","order"]}
+{"id":"ex_zh_001","language":"zh","text":"请把约翰昨天发送的消息整理后发给爱丽丝和销售部。","tags":["summarize","send","person","department","time"]}
+{"id":"ex_zh_002","language":"zh","text":"请在周五之前取消订阅。","tags":["cancel","time"]}
+{"id":"ex_zh_003","language":"zh","text":"本周更新收货地址。","tags":["update","address","time"]}
+{"id":"ex_zh_004","language":"zh","text":"请以PDF附件形式把报告发送给财务团队。","tags":["send","manner","department"]}
+{"id":"ex_zh_005","language":"zh","text":"把聊天消息汇总后发给支持小组。","tags":["summarize","send","department"]}
+{"id":"ex_zh_006","language":"zh","text":"退款并把发票发送给李雷。","tags":["refund","send","person"]}
+{"id":"ex_zh_007","language":"zh","text":"请整理2026-02-10到2026-02-12的订单消息。","tags":["summarize","time","order"]}
+{"id":"ex_ar_001","language":"ar","text":"يرجى تلخيص الرسائل التي أرسلها جون أمس وإرسالها إلى أليس وفريق المبيعات.","tags":["summarize","send","person","department","time"]}
+{"id":"ex_ar_002","language":"ar","text":"يرجى إلغاء الاشتراك قبل يوم الجمعة.","tags":["cancel","time"]}
+{"id":"ex_ar_003","language":"ar","text":"حدث عنوان التسليم هذا الأسبوع.","tags":["update","address","time"]}
+{"id":"ex_ar_004","language":"ar","text":"أرسل التقرير كمرفق PDF إلى فريق المالية.","tags":["send","manner","department"]}
+{"id":"ex_ar_005","language":"ar","text":"لخص رسائل الدردشة ثم أعد إرسالها إلى قسم الدعم.","tags":["summarize","send","department"]}
+{"id":"ex_ar_006","language":"ar","text":"قم برد الدفع وأرسل الفاتورة إلى أحمد.","tags":["refund","send","person"]}
+{"id":"ex_ar_007","language":"ar","text":"لخص رسائل الطلبات من 2026-02-10 إلى 2026-02-12.","tags":["summarize","time","order"]}
+{"id":"ex_de_001","language":"de","text":"Fasse die Nachrichten zusammen, die John gestern gesendet hat, und sende sie an Alice und das Vertriebsteam.","tags":["summarize","send","person","department","time"]}
+{"id":"ex_de_002","language":"de","text":"Bitte storniere das Abonnement bis Freitag.","tags":["cancel","time"]}
+{"id":"ex_de_003","language":"de","text":"Aktualisiere diese Woche die Lieferadresse.","tags":["update","address","time"]}
+{"id":"ex_de_004","language":"de","text":"Sende den Bericht als PDF im Anhang an das Finanzteam.","tags":["send","manner","department"]}
+{"id":"ex_de_005","language":"de","text":"Fasse Chat-Nachrichten zusammen und versende sie an die Support-Abteilung.","tags":["summarize","send","department"]}
+{"id":"ex_de_006","language":"de","text":"Erstatte die Zahlung und schicke die Rechnung an Emma.","tags":["refund","send","person"]}
+{"id":"ex_de_007","language":"de","text":"Fasse alle Bestellnachrichten von 2026-02-10 bis 2026-02-12 zusammen.","tags":["summarize","time","order"]}
+{"id":"ex_fr_001","language":"fr","text":"Résume les messages envoyés par John hier et envoie-les à Alice et à l'équipe commerciale.","tags":["summarize","send","person","department","time"]}
+{"id":"ex_fr_002","language":"fr","text":"Merci d'annuler l'abonnement d'ici vendredi.","tags":["cancel","time"]}
+{"id":"ex_fr_003","language":"fr","text":"Mets à jour l'adresse de livraison cette semaine.","tags":["update","address","time"]}
+{"id":"ex_fr_004","language":"fr","text":"Envoie le rapport en PDF en pièce jointe à l'équipe finance.","tags":["send","manner","department"]}
+{"id":"ex_fr_005","language":"fr","text":"Résume les messages de chat puis transfère-les au département support.","tags":["summarize","send","department"]}
+{"id":"ex_fr_006","language":"fr","text":"Rembourse le paiement et envoie la facture à Emma.","tags":["refund","send","person"]}
+{"id":"ex_fr_007","language":"fr","text":"Résume les messages de commande du 2026-02-10 au 2026-02-12.","tags":["summarize","time","order"]}

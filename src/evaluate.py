@@ -44,6 +44,7 @@ def evaluate(
     golden_path: str,
     model: str = "gpt-4.1",
     extra_rules_file: str = "",
+    rules_config_file: str = "",
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
@@ -68,6 +69,7 @@ def evaluate(
             row["text"],
             model=model,
             extra_rules_file=extra_rules_file,
+            rules_config_file=rules_config_file,
             provider=provider,
             ollama_base_url=ollama_base_url,
             use_instructor=use_instructor,
@@ -85,6 +87,16 @@ def evaluate(
         cond_scores.append(_condition_recall(pred.get("conditions", []), gold.get("conditions", [])))
 
     n = len(rows)
+    if n == 0:
+        return {
+            "count": 0,
+            "subject_exact": 0.0,
+            "verb_exact": 0.0,
+            "object_exact": 0.0,
+            "condition_recall": 0.0,
+            "svo_macro_exact": 0.0,
+        }
+
     result = {
         "count": n,
         "subject_exact": round(subject_hits / n, 4),
@@ -103,6 +115,7 @@ def evaluate_split_by_verb(
     golden_path: str,
     model: str = "gpt-4.1",
     extra_rules_file: str = "",
+    rules_config_file: str = "",
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
@@ -133,6 +146,7 @@ def evaluate_split_by_verb(
             row["text"],
             model=model,
             extra_rules_file=extra_rules_file,
+            rules_config_file=rules_config_file,
             provider=provider,
             ollama_base_url=ollama_base_url,
             use_instructor=use_instructor,
@@ -219,7 +233,7 @@ def cli() -> None:
     parser.add_argument(
         "--provider",
         default="openai",
-        choices=["openai", "ollama", "litellm"],
+        choices=["openai", "ollama", "litellm", "spacy"],
         help="LLM provider",
     )
     parser.add_argument("--model", default="gpt-4.1", help="Model name (OpenAI or Ollama local model)")
@@ -236,6 +250,11 @@ def cli() -> None:
         "--extra-rules-file",
         default="",
         help="Optional text file path with additional prompt rules",
+    )
+    parser.add_argument(
+        "--rules-config-file",
+        default="",
+        help="Optional JSON config path for dynamic extraction rules",
     )
     parser.add_argument(
         "--split-by-verb",
@@ -255,6 +274,7 @@ def cli() -> None:
             args.golden,
             model=args.model,
             extra_rules_file=args.extra_rules_file,
+            rules_config_file=args.rules_config_file,
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,
@@ -269,6 +289,7 @@ def cli() -> None:
             args.golden,
             model=args.model,
             extra_rules_file=args.extra_rules_file,
+            rules_config_file=args.rules_config_file,
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,

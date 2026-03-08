@@ -75,6 +75,29 @@ python src/extractor.py \
 옵션:
 - `--use-spacy-postprocess`: spaCy + 규칙 기반 보정 활성화
 - `--spacy-model`: spaCy 모델명 (없으면 blank 모델로 fallback)
+- `--rules-config-file`: verb/object/manner 동적 규칙 JSON 경로 (기본값: `config/extraction_rules.json`)
+
+규칙 파일을 바꿔서 동적으로 추출 룰 변경:
+
+```bash
+python src/extractor.py \
+	--provider spacy \
+	--use-guardrails \
+	--use-spacy-postprocess \
+	--rules-config-file config/extraction_rules.json \
+	--text "Please summarize the message and send it by email to Alice."
+```
+
+spaCy만 사용(LLM 없이 규칙 기반 추출):
+
+```bash
+python src/extractor.py \
+	--provider spacy \
+	--use-guardrails \
+	--use-spacy-postprocess \
+	--split-by-verb \
+	--text "전철호가 보낸 쪽지 정리해서 이선정, 영업팀에게 보내줘"
+```
 
 로컬 LLM(Ollama) 단건 추출 예시:
 
@@ -166,8 +189,12 @@ python src/evaluate.py \
 	--golden data/golden_set_50.jsonl \
 	--model gpt-4.1 \
 	--split-by-verb \
+	--rules-config-file config/extraction_rules.json \
 	--extra-rules-file prompts/tuned_rules.txt
 ```
+
+옵션:
+- `--rules-config-file`: extractor 동적 규칙 JSON 파일 경로
 
 평가 지표:
 - `subject_exact`
@@ -201,6 +228,7 @@ python src/error_analysis.py \
 	--provider ollama \
 	--model qwen2.5:14b-instruct \
 	--golden data/golden_set_50.jsonl \
+	--rules-config-file config/extraction_rules.json \
 	--out-json reports/error_analysis.json \
 	--out-md reports/error_analysis.md
 ```
@@ -224,6 +252,8 @@ python src/error_analysis.py \
 ├── requirements.txt
 ├── data
 │   └── golden_set_50.jsonl
+│   └── example_requests_49.jsonl
+│   └── example_requests_200.jsonl
 ├── reports
 │   ├── error_analysis.json
 │   └── error_analysis.md
@@ -274,6 +304,7 @@ python src/benchmark_models.py \
 	--golden data/golden_set_verb_12.jsonl \
 	--split-by-verb \
 	--use-guardrails \
+	--rules-config-file config/extraction_rules.json \
 	--extra-rules-file prompts/tuned_rules.txt \
 	--out-json reports/benchmark_models.json \
 	--out-md reports/benchmark_models.md

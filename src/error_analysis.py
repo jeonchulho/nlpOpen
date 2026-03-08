@@ -21,6 +21,7 @@ def _condition_text_set(conditions: list[dict]) -> set[str]:
 def analyze_errors(
     golden_path: str,
     model: str = "gpt-4.1",
+    rules_config_file: str = "",
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
@@ -47,6 +48,7 @@ def analyze_errors(
         pred = extract_one(
             text,
             model=model,
+            rules_config_file=rules_config_file,
             provider=provider,
             ollama_base_url=ollama_base_url,
             use_instructor=use_instructor,
@@ -186,7 +188,7 @@ def cli() -> None:
     parser.add_argument(
         "--provider",
         default="openai",
-        choices=["openai", "ollama", "litellm"],
+        choices=["openai", "ollama", "litellm", "spacy"],
         help="LLM provider",
     )
     parser.add_argument("--model", default="gpt-4.1", help="Model name (OpenAI or Ollama local model)")
@@ -199,6 +201,11 @@ def cli() -> None:
     parser.add_argument("--litellm-api-key", default="", help="LiteLLM API key")
     parser.add_argument("--use-spacy-postprocess", action="store_true", help="Enable spaCy rule postprocess")
     parser.add_argument("--spacy-model", default="xx_ent_wiki_sm", help="spaCy model for postprocess")
+    parser.add_argument(
+        "--rules-config-file",
+        default="",
+        help="Optional JSON config path for dynamic extraction rules",
+    )
     parser.add_argument(
         "--out-json",
         default="reports/error_analysis.json",
@@ -220,6 +227,7 @@ def cli() -> None:
     report = analyze_errors(
         args.golden,
         model=args.model,
+        rules_config_file=args.rules_config_file,
         provider=args.provider,
         ollama_base_url=args.ollama_base_url,
         use_instructor=args.use_instructor,
