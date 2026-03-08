@@ -4,5 +4,6 @@ langchain-openai>=0.2.0
 langchain-ollama>=0.2.0
 instructor>=1.6.0
 litellm>=1.51.0
+spacy>=3.7.0
 pydantic>=2.8.0
 python-dotenv>=1.0.1

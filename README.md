@@ -56,8 +56,25 @@ python src/extractor.py \
 	--litellm-api-base "https://your-litellm-gateway" \
 	--litellm-api-key "YOUR_LITELLM_KEY" \
 	--use-guardrails \
+	--use-spacy-postprocess \
 	--text "내일 오후 3시까지 주문 취소해 주세요."
 ```
+
+spaCy 후처리(person/department/action 보정) 사용:
+
+```bash
+python src/extractor.py \
+	--provider openai \
+	--model gpt-4.1 \
+	--use-guardrails \
+	--use-spacy-postprocess \
+	--spacy-model xx_ent_wiki_sm \
+	--text "전철호가 보낸 쪽지 정리해서 이선정, 영업팀에게 보내줘"
+```
+
+옵션:
+- `--use-spacy-postprocess`: spaCy + 규칙 기반 보정 활성화
+- `--spacy-model`: spaCy 모델명 (없으면 blank 모델로 fallback)
 
 로컬 LLM(Ollama) 단건 추출 예시:
 

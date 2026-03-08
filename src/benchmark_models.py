@@ -18,6 +18,8 @@ def run_benchmark(
     ollama_base_url: str,
     use_instructor: bool,
     use_guardrails: bool,
+    use_spacy_postprocess: bool,
+    spacy_model: str,
     litellm_api_base: str,
     litellm_api_key: str,
 ) -> list[dict]:
@@ -32,6 +34,8 @@ def run_benchmark(
                 ollama_base_url=ollama_base_url,
                 use_instructor=use_instructor,
                 use_guardrails=use_guardrails,
+                use_spacy_postprocess=use_spacy_postprocess,
+                spacy_model=spacy_model,
                 litellm_api_base=litellm_api_base,
                 litellm_api_key=litellm_api_key,
             )
@@ -44,6 +48,8 @@ def run_benchmark(
                 ollama_base_url=ollama_base_url,
                 use_instructor=use_instructor,
                 use_guardrails=use_guardrails,
+                use_spacy_postprocess=use_spacy_postprocess,
+                spacy_model=spacy_model,
                 litellm_api_base=litellm_api_base,
                 litellm_api_key=litellm_api_key,
             )
@@ -54,6 +60,7 @@ def run_benchmark(
                 "model": model,
                 "use_instructor": use_instructor,
                 "use_guardrails": use_guardrails,
+                "use_spacy_postprocess": use_spacy_postprocess,
                 "golden": golden,
                 "split_by_verb": split_by_verb,
                 "svo_macro_exact": report.get("svo_macro_exact"),
@@ -117,6 +124,8 @@ def cli() -> None:
         help="Use Instructor backend (OpenAI provider only)",
     )
     parser.add_argument("--use-guardrails", action="store_true", help="Enable post-extraction guardrails")
+    parser.add_argument("--use-spacy-postprocess", action="store_true", help="Enable spaCy rule postprocess")
+    parser.add_argument("--spacy-model", default="xx_ent_wiki_sm", help="spaCy model for postprocess")
     parser.add_argument(
         "--out-json",
         default="reports/benchmark_models.json",
@@ -142,6 +151,8 @@ def cli() -> None:
         ollama_base_url=args.ollama_base_url,
         use_instructor=args.use_instructor,
         use_guardrails=args.use_guardrails,
+        use_spacy_postprocess=args.use_spacy_postprocess,
+        spacy_model=args.spacy_model,
         litellm_api_base=args.litellm_api_base,
         litellm_api_key=args.litellm_api_key,
     )

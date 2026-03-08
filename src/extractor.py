@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -25,6 +26,11 @@ try:
     from langchain_community.chat_models import ChatLiteLLM
 except ImportError:  # pragma: no cover
     ChatLiteLLM = None
+
+try:
+    import spacy
+except ImportError:  # pragma: no cover
+    spacy = None
 
 
 SUPPORTED_LANGUAGES = {"ko", "en", "ja", "zh", "ar", "de", "fr"}
@@ -173,6 +179,8 @@ class MultilingualSVOExtractor:
         ollama_base_url: str = "http://localhost:11434",
         use_instructor: bool = False,
         use_guardrails: bool = False,
+        use_spacy_postprocess: bool = False,
+        spacy_model: str = "xx_ent_wiki_sm",
         litellm_api_base: str = "",
         litellm_api_key: str = "",
     ) -> None:
@@ -181,6 +189,8 @@ class MultilingualSVOExtractor:
         self.model = model
         self.use_instructor = use_instructor
         self.use_guardrails = use_guardrails
+        self.use_spacy_postprocess = use_spacy_postprocess
+        self.spacy_nlp = self._build_spacy_nlp(spacy_model) if self.use_spacy_postprocess else None
 
         self.instructor_client = None
         if self.use_instructor:
@@ -263,19 +273,117 @@ class MultilingualSVOExtractor:
     def extract(self, text: str) -> ExtractionResult:
         if self.use_instructor:
             result = self._extract_with_instructor(text)
+            result = self._apply_spacy_postprocess_single(result, text)
             return self._apply_guardrails_single(result)
         first_pass = self.extract_chain.invoke({"text": text})
         final_pass = self.refine_chain.invoke(
             {"text": text, "first_pass_json": first_pass.model_dump_json(indent=2, ensure_ascii=False)}
         )
+        final_pass = self._apply_spacy_postprocess_single(final_pass, text)
         return self._apply_guardrails_single(final_pass)
 
     def extract_by_verb(self, text: str) -> MultiActionExtractionResult:
         if self.use_instructor:
             result = self._extract_by_verb_with_instructor(text)
+            result = self._apply_spacy_postprocess_multi(result, text)
             return self._apply_guardrails_multi(result)
         result = self.multi_action_chain.invoke({"text": text})
+        result = self._apply_spacy_postprocess_multi(result, text)
         return self._apply_guardrails_multi(result)
+
+    @staticmethod
+    def _build_spacy_nlp(model_name: str):
+        if spacy is None:
+            return None
+        try:
+            return spacy.load(model_name)
+        except Exception:
+            # Fallback keeps the postprocessor alive even when model download is missing.
+            return spacy.blank("xx")
+
+    def _apply_spacy_postprocess_single(self, result: ExtractionResult, text: str) -> ExtractionResult:
+        if not self.use_spacy_postprocess:
+            return result
+
+        data = result.model_dump()
+        data["conditions"] = self._spacy_refine_conditions(data.get("conditions", []), text)
+        return ExtractionResult(**data)
+
+    def _apply_spacy_postprocess_multi(
+        self, result: MultiActionExtractionResult, text: str
+    ) -> MultiActionExtractionResult:
+        if not self.use_spacy_postprocess:
+            return result
+
+        data = result.model_dump()
+        actions = []
+        for action in data.get("actions", []):
+            action_data = dict(action)
+            action_data["conditions"] = self._spacy_refine_conditions(action_data.get("conditions", []), text)
+            actions.append(action_data)
+        data["actions"] = actions
+        return MultiActionExtractionResult(**data)
+
+    def _spacy_refine_conditions(self, conditions: list[dict], text: str) -> list[dict]:
+        signals = self._extract_spacy_signals(text)
+        updated: list[dict] = []
+
+        for c in conditions:
+            ctype = str(c.get("type", "other")).strip() or "other"
+            ctext = str(c.get("text", "")).strip()
+            if not ctext:
+                continue
+
+            if ctext in signals["departments"]:
+                ctype = "department"
+            elif ctext in signals["persons"]:
+                ctype = "person"
+            elif ctext in signals["actions"] and ctype not in {"time", "location", "reason", "constraint"}:
+                ctype = "action"
+
+            updated.append({"type": ctype, "text": ctext})
+
+        existing_texts = {str(c.get("text", "")).strip() for c in updated}
+        for p in sorted(signals["persons"]):
+            if p not in existing_texts:
+                updated.append({"type": "person", "text": p})
+        for d in sorted(signals["departments"]):
+            if d not in existing_texts:
+                updated.append({"type": "department", "text": d})
+
+        return self._dedupe_conditions(updated)
+
+    def _extract_spacy_signals(self, text: str) -> dict[str, set[str]]:
+        persons: set[str] = set()
+        departments: set[str] = set()
+        actions: set[str] = set()
+
+        dept_pattern = re.compile(r"([가-힣A-Za-z0-9]+(?:팀|부|본부|센터|실|그룹))")
+        person_pattern = re.compile(r"\b([가-힣]{2,4})(?=(?:가|이|님|씨|에게|한테|께|의)\b)")
+        action_pattern = re.compile(
+            r"([가-힣]+(?:해서|하고|해|한|하기|요청|부탁|보내줘|보내 주세요|보내))"
+        )
+
+        for m in dept_pattern.findall(text):
+            departments.add(m.strip())
+        for m in person_pattern.findall(text):
+            persons.add(m.strip())
+        for m in action_pattern.findall(text):
+            actions.add(m.strip())
+
+        if self.spacy_nlp is not None:
+            doc = self.spacy_nlp(text)
+            for ent in getattr(doc, "ents", []):
+                et = (ent.label_ or "").upper()
+                etext = ent.text.strip()
+                if not etext:
+                    continue
+                if et in {"PERSON", "PER"}:
+                    persons.add(etext)
+                elif et in {"ORG"} and re.search(r"(팀|부|본부|센터|실|그룹)$", etext):
+                    departments.add(etext)
+
+        return {"persons": persons, "departments": departments, "actions": actions}
 
     def _apply_guardrails_single(self, result: ExtractionResult) -> ExtractionResult:
         if not self.use_guardrails:
@@ -404,6 +512,8 @@ def extract_one(
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
     use_guardrails: bool = False,
+    use_spacy_postprocess: bool = False,
+    spacy_model: str = "xx_ent_wiki_sm",
     litellm_api_base: str = "",
     litellm_api_key: str = "",
 ) -> dict:
@@ -417,6 +527,8 @@ def extract_one(
         ollama_base_url=ollama_base_url,
         use_instructor=use_instructor,
         use_guardrails=use_guardrails,
+        use_spacy_postprocess=use_spacy_postprocess,
+        spacy_model=spacy_model,
         litellm_api_base=litellm_api_base,
         litellm_api_key=litellm_api_key,
     )
@@ -432,6 +544,8 @@ def extract_many(
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
     use_guardrails: bool = False,
+    use_spacy_postprocess: bool = False,
+    spacy_model: str = "xx_ent_wiki_sm",
     litellm_api_base: str = "",
     litellm_api_key: str = "",
 ) -> list[dict]:
@@ -443,6 +557,8 @@ def extract_many(
         ollama_base_url=ollama_base_url,
         use_instructor=use_instructor,
         use_guardrails=use_guardrails,
+        use_spacy_postprocess=use_spacy_postprocess,
+        spacy_model=spacy_model,
         litellm_api_base=litellm_api_base,
         litellm_api_key=litellm_api_key,
     )
@@ -460,6 +576,8 @@ def extract_by_verb(
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
     use_guardrails: bool = False,
+    use_spacy_postprocess: bool = False,
+    spacy_model: str = "xx_ent_wiki_sm",
     litellm_api_base: str = "",
     litellm_api_key: str = "",
 ) -> dict:
@@ -473,6 +591,8 @@ def extract_by_verb(
         ollama_base_url=ollama_base_url,
         use_instructor=use_instructor,
         use_guardrails=use_guardrails,
+        use_spacy_postprocess=use_spacy_postprocess,
+        spacy_model=spacy_model,
         litellm_api_base=litellm_api_base,
         litellm_api_key=litellm_api_key,
     )
@@ -527,6 +647,16 @@ def cli() -> None:
         action="store_true",
         help="Enable post-extraction quality guardrails (dedupe/normalize/sanity checks)",
     )
+    parser.add_argument(
+        "--use-spacy-postprocess",
+        action="store_true",
+        help="Enable spaCy-based rule postprocessing for person/department/action corrections",
+    )
+    parser.add_argument(
+        "--spacy-model",
+        default="xx_ent_wiki_sm",
+        help="spaCy model name used for postprocessing (falls back to blank model if unavailable)",
+    )
     args = parser.parse_args()
 
     if args.split_by_verb:
@@ -538,6 +668,8 @@ def cli() -> None:
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,
             use_guardrails=args.use_guardrails,
+            use_spacy_postprocess=args.use_spacy_postprocess,
+            spacy_model=args.spacy_model,
             litellm_api_base=args.litellm_api_base,
             litellm_api_key=args.litellm_api_key,
         )
@@ -550,6 +682,8 @@ def cli() -> None:
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,
             use_guardrails=args.use_guardrails,
+            use_spacy_postprocess=args.use_spacy_postprocess,
+            spacy_model=args.spacy_model,
             litellm_api_base=args.litellm_api_base,
             litellm_api_key=args.litellm_api_key,
         )

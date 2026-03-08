@@ -25,6 +25,8 @@ def analyze_errors(
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
     use_guardrails: bool = False,
+    use_spacy_postprocess: bool = False,
+    spacy_model: str = "xx_ent_wiki_sm",
     litellm_api_base: str = "",
     litellm_api_key: str = "",
 ) -> dict:
@@ -49,6 +51,8 @@ def analyze_errors(
             ollama_base_url=ollama_base_url,
             use_instructor=use_instructor,
             use_guardrails=use_guardrails,
+            use_spacy_postprocess=use_spacy_postprocess,
+            spacy_model=spacy_model,
             litellm_api_base=litellm_api_base,
             litellm_api_key=litellm_api_key,
         )
@@ -193,6 +197,8 @@ def cli() -> None:
     )
     parser.add_argument("--litellm-api-base", default="", help="LiteLLM API base URL")
     parser.add_argument("--litellm-api-key", default="", help="LiteLLM API key")
+    parser.add_argument("--use-spacy-postprocess", action="store_true", help="Enable spaCy rule postprocess")
+    parser.add_argument("--spacy-model", default="xx_ent_wiki_sm", help="spaCy model for postprocess")
     parser.add_argument(
         "--out-json",
         default="reports/error_analysis.json",
@@ -218,6 +224,8 @@ def cli() -> None:
         ollama_base_url=args.ollama_base_url,
         use_instructor=args.use_instructor,
         use_guardrails=args.use_guardrails,
+        use_spacy_postprocess=args.use_spacy_postprocess,
+        spacy_model=args.spacy_model,
         litellm_api_base=args.litellm_api_base,
         litellm_api_key=args.litellm_api_key,
     )
