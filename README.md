@@ -36,6 +36,16 @@ export OPENAI_API_KEY="your_api_key"
 python src/extractor.py --text "내일 오후 3시까지 주문 취소해 주세요." --model gpt-4.1
 ```
 
+OpenAI + Instructor 추출(스키마 강제 강화):
+
+```bash
+python src/extractor.py \
+	--provider openai \
+	--model gpt-4.1 \
+	--use-instructor \
+	--text "내일 오후 3시까지 주문 취소해 주세요."
+```
+
 로컬 LLM(Ollama) 단건 추출 예시:
 
 ```bash
@@ -79,6 +89,16 @@ python src/extractor.py \
 
 ```bash
 python src/evaluate.py --golden data/golden_set_50.jsonl --model gpt-4.1
+```
+
+OpenAI + Instructor 평가:
+
+```bash
+python src/evaluate.py \
+	--provider openai \
+	--model gpt-4.1 \
+	--use-instructor \
+	--golden data/golden_set_50.jsonl
 ```
 
 로컬 LLM(Ollama) 평가 예시:
@@ -211,3 +231,22 @@ python src/extractor.py \
 	--model gpt-4.1 \
 	--extra-rules-file prompts/tuned_rules.txt
 ```
+
+## 10) 로컬 모델 벤치마크 (14B vs 32B)
+
+동일 데이터셋에서 모델별 정확도를 비교합니다.
+
+```bash
+python src/benchmark_models.py \
+	--provider ollama \
+	--models qwen2.5:14b,qwen2.5:32b \
+	--golden data/golden_set_verb_12.jsonl \
+	--split-by-verb \
+	--extra-rules-file prompts/tuned_rules.txt \
+	--out-json reports/benchmark_models.json \
+	--out-md reports/benchmark_models.md
+```
+
+출력:
+- `reports/benchmark_models.json`: 모델별 원본 지표
+- `reports/benchmark_models.md`: 비교표 요약

@@ -8,7 +8,13 @@ from typing import Literal
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 from pydantic import BaseModel, Field
+
+try:
+    import instructor
+except ImportError:  # pragma: no cover
+    instructor = None
 
 try:
     from langchain_ollama import ChatOllama
@@ -157,8 +163,25 @@ class MultilingualSVOExtractor:
         temperature: float = 0.0,
         extra_rules: str = "",
         ollama_base_url: str = "http://localhost:11434",
+        use_instructor: bool = False,
     ) -> None:
         load_dotenv()
+        self.provider = provider
+        self.model = model
+        self.use_instructor = use_instructor
+
+        self.instructor_client = None
+        if self.use_instructor:
+            if provider != "openai":
+                raise ValueError("use_instructor is only supported with provider=openai")
+            if instructor is None:
+                raise ImportError(
+                    "instructor is not installed. Install dependencies with: pip install -r requirements.txt"
+                )
+            if not os.getenv("OPENAI_API_KEY"):
+                raise EnvironmentError("OPENAI_API_KEY is not set.")
+            self.instructor_client = instructor.from_openai(OpenAI())
+
         self.llm = self._build_llm(
             provider=provider,
             model=model,
@@ -210,6 +233,8 @@ class MultilingualSVOExtractor:
         raise ValueError(f"Unsupported provider: {provider}")
 
     def extract(self, text: str) -> ExtractionResult:
+        if self.use_instructor:
+            return self._extract_with_instructor(text)
         first_pass = self.extract_chain.invoke({"text": text})
         final_pass = self.refine_chain.invoke(
             {"text": text, "first_pass_json": first_pass.model_dump_json(indent=2, ensure_ascii=False)}
@@ -217,7 +242,46 @@ class MultilingualSVOExtractor:
         return final_pass
 
     def extract_by_verb(self, text: str) -> MultiActionExtractionResult:
+        if self.use_instructor:
+            return self._extract_by_verb_with_instructor(text)
         return self.multi_action_chain.invoke({"text": text})
+
+    def _extract_with_instructor(self, text: str) -> ExtractionResult:
+        assert self.instructor_client is not None
+        first_pass = self.instructor_client.chat.completions.create(
+            model=self.model,
+            response_model=ExtractionResult,
+            messages=[
+                {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
+                {"role": "user", "content": EXTRACTION_HUMAN_PROMPT.format(text=text)},
+            ],
+        )
+        final_pass = self.instructor_client.chat.completions.create(
+            model=self.model,
+            response_model=ExtractionResult,
+            messages=[
+                {"role": "system", "content": REFINE_SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": REFINE_HUMAN_PROMPT.format(
+                        text=text,
+                        first_pass_json=first_pass.model_dump_json(indent=2, ensure_ascii=False),
+                    ),
+                },
+            ],
+        )
+        return final_pass
+
+    def _extract_by_verb_with_instructor(self, text: str) -> MultiActionExtractionResult:
+        assert self.instructor_client is not None
+        return self.instructor_client.chat.completions.create(
+            model=self.model,
+            response_model=MultiActionExtractionResult,
+            messages=[
+                {"role": "system", "content": MULTI_ACTION_SYSTEM_PROMPT},
+                {"role": "user", "content": MULTI_ACTION_HUMAN_PROMPT.format(text=text)},
+            ],
+        )
 
 
 def _read_rules_file(path: str) -> str:
@@ -233,6 +297,7 @@ def extract_one(
     extra_rules_file: str = "",
     provider: Literal["openai", "ollama"] = "openai",
     ollama_base_url: str = "http://localhost:11434",
+    use_instructor: bool = False,
 ) -> dict:
     if not text.strip():
         raise ValueError("text must not be empty")
@@ -242,6 +307,7 @@ def extract_one(
         model=model,
         extra_rules=extra_rules,
         ollama_base_url=ollama_base_url,
+        use_instructor=use_instructor,
     )
     result = extractor.extract(text)
     return result.model_dump()
@@ -253,6 +319,7 @@ def extract_many(
     extra_rules_file: str = "",
     provider: Literal["openai", "ollama"] = "openai",
     ollama_base_url: str = "http://localhost:11434",
+    use_instructor: bool = False,
 ) -> list[dict]:
     extra_rules = _read_rules_file(extra_rules_file) if extra_rules_file else ""
     extractor = MultilingualSVOExtractor(
@@ -260,6 +327,7 @@ def extract_many(
         model=model,
         extra_rules=extra_rules,
         ollama_base_url=ollama_base_url,
+        use_instructor=use_instructor,
     )
     outputs: list[dict] = []
     for text in texts:
@@ -273,6 +341,7 @@ def extract_by_verb(
     extra_rules_file: str = "",
     provider: Literal["openai", "ollama"] = "openai",
     ollama_base_url: str = "http://localhost:11434",
+    use_instructor: bool = False,
 ) -> dict:
     if not text.strip():
         raise ValueError("text must not be empty")
@@ -282,6 +351,7 @@ def extract_by_verb(
         model=model,
         extra_rules=extra_rules,
         ollama_base_url=ollama_base_url,
+        use_instructor=use_instructor,
     )
     result = extractor.extract_by_verb(text)
     return result.model_dump()
@@ -309,6 +379,11 @@ def cli() -> None:
         action="store_true",
         help="If set, returns verb-wise action list instead of single SVO",
     )
+    parser.add_argument(
+        "--use-instructor",
+        action="store_true",
+        help="Use Instructor backend (OpenAI provider only) for stronger schema-constrained output",
+    )
     args = parser.parse_args()
 
     if args.split_by_verb:
@@ -318,6 +393,7 @@ def cli() -> None:
             extra_rules_file=args.extra_rules_file,
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
+            use_instructor=args.use_instructor,
         )
     else:
         result = extract_one(
@@ -326,6 +402,7 @@ def cli() -> None:
             extra_rules_file=args.extra_rules_file,
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
+            use_instructor=args.use_instructor,
         )
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

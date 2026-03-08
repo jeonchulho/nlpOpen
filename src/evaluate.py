@@ -46,6 +46,7 @@ def evaluate(
     extra_rules_file: str = "",
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
+    use_instructor: bool = False,
 ) -> dict:
     rows = []
     with Path(golden_path).open("r", encoding="utf-8") as f:
@@ -64,6 +65,7 @@ def evaluate(
             extra_rules_file=extra_rules_file,
             provider=provider,
             ollama_base_url=ollama_base_url,
+            use_instructor=use_instructor,
         )
         gold = row["gold"]
 
@@ -93,6 +95,7 @@ def evaluate_split_by_verb(
     extra_rules_file: str = "",
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
+    use_instructor: bool = False,
 ) -> dict:
     rows = []
     with Path(golden_path).open("r", encoding="utf-8") as f:
@@ -117,6 +120,7 @@ def evaluate_split_by_verb(
             extra_rules_file=extra_rules_file,
             provider=provider,
             ollama_base_url=ollama_base_url,
+            use_instructor=use_instructor,
         )
         pred_actions = pred_multi.get("actions", [])
         gold_actions = _to_gold_actions(row)
@@ -209,6 +213,11 @@ def cli() -> None:
         action="store_true",
         help="Evaluate using verb-wise action splitting output",
     )
+    parser.add_argument(
+        "--use-instructor",
+        action="store_true",
+        help="Use Instructor backend (OpenAI provider only)",
+    )
     args = parser.parse_args()
 
     if args.split_by_verb:
@@ -218,6 +227,7 @@ def cli() -> None:
             extra_rules_file=args.extra_rules_file,
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
+            use_instructor=args.use_instructor,
         )
     else:
         report = evaluate(
@@ -226,6 +236,7 @@ def cli() -> None:
             extra_rules_file=args.extra_rules_file,
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
+            use_instructor=args.use_instructor,
         )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 

@@ -23,6 +23,7 @@ def analyze_errors(
     model: str = "gpt-4.1",
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
+    use_instructor: bool = False,
 ) -> dict:
     rows = []
     with Path(golden_path).open("r", encoding="utf-8") as f:
@@ -43,6 +44,7 @@ def analyze_errors(
             model=model,
             provider=provider,
             ollama_base_url=ollama_base_url,
+            use_instructor=use_instructor,
         )
 
         sample_errors: list[str] = []
@@ -188,6 +190,11 @@ def cli() -> None:
         default="reports/error_analysis.md",
         help="Output path for Markdown report",
     )
+    parser.add_argument(
+        "--use-instructor",
+        action="store_true",
+        help="Use Instructor backend (OpenAI provider only)",
+    )
     args = parser.parse_args()
 
     report = analyze_errors(
@@ -195,6 +202,7 @@ def cli() -> None:
         model=args.model,
         provider=args.provider,
         ollama_base_url=args.ollama_base_url,
+        use_instructor=args.use_instructor,
     )
 
     out_json = Path(args.out_json)
