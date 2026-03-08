@@ -47,6 +47,9 @@ def evaluate(
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
+    use_guardrails: bool = False,
+    litellm_api_base: str = "",
+    litellm_api_key: str = "",
 ) -> dict:
     rows = []
     with Path(golden_path).open("r", encoding="utf-8") as f:
@@ -66,6 +69,9 @@ def evaluate(
             provider=provider,
             ollama_base_url=ollama_base_url,
             use_instructor=use_instructor,
+            use_guardrails=use_guardrails,
+            litellm_api_base=litellm_api_base,
+            litellm_api_key=litellm_api_key,
         )
         gold = row["gold"]
 
@@ -96,6 +102,9 @@ def evaluate_split_by_verb(
     provider: str = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
+    use_guardrails: bool = False,
+    litellm_api_base: str = "",
+    litellm_api_key: str = "",
 ) -> dict:
     rows = []
     with Path(golden_path).open("r", encoding="utf-8") as f:
@@ -121,6 +130,9 @@ def evaluate_split_by_verb(
             provider=provider,
             ollama_base_url=ollama_base_url,
             use_instructor=use_instructor,
+            use_guardrails=use_guardrails,
+            litellm_api_base=litellm_api_base,
+            litellm_api_key=litellm_api_key,
         )
         pred_actions = pred_multi.get("actions", [])
         gold_actions = _to_gold_actions(row)
@@ -196,13 +208,20 @@ def cli() -> None:
         default="data/golden_set_50.jsonl",
         help="Path to JSONL golden set",
     )
-    parser.add_argument("--provider", default="openai", choices=["openai", "ollama"], help="LLM provider")
+    parser.add_argument(
+        "--provider",
+        default="openai",
+        choices=["openai", "ollama", "litellm"],
+        help="LLM provider",
+    )
     parser.add_argument("--model", default="gpt-4.1", help="Model name (OpenAI or Ollama local model)")
     parser.add_argument(
         "--ollama-base-url",
         default="http://localhost:11434",
         help="Ollama server URL (used when --provider ollama)",
     )
+    parser.add_argument("--litellm-api-base", default="", help="LiteLLM API base URL")
+    parser.add_argument("--litellm-api-key", default="", help="LiteLLM API key")
     parser.add_argument(
         "--extra-rules-file",
         default="",
@@ -213,6 +232,7 @@ def cli() -> None:
         action="store_true",
         help="Evaluate using verb-wise action splitting output",
     )
+    parser.add_argument("--use-guardrails", action="store_true", help="Enable post-extraction guardrails")
     parser.add_argument(
         "--use-instructor",
         action="store_true",
@@ -228,6 +248,9 @@ def cli() -> None:
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,
+            use_guardrails=args.use_guardrails,
+            litellm_api_base=args.litellm_api_base,
+            litellm_api_key=args.litellm_api_key,
         )
     else:
         report = evaluate(
@@ -237,6 +260,9 @@ def cli() -> None:
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,
+            use_guardrails=args.use_guardrails,
+            litellm_api_base=args.litellm_api_base,
+            litellm_api_key=args.litellm_api_key,
         )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 

@@ -21,6 +21,14 @@ try:
 except ImportError:  # pragma: no cover
     ChatOllama = None
 
+try:
+    from langchain_community.chat_models import ChatLiteLLM
+except ImportError:  # pragma: no cover
+    ChatLiteLLM = None
+
+
+SUPPORTED_LANGUAGES = {"ko", "en", "ja", "zh", "ar", "de", "fr"}
+
 
 class Condition(BaseModel):
     type: Literal[
@@ -158,17 +166,21 @@ class MultilingualSVOExtractor:
 
     def __init__(
         self,
-        provider: Literal["openai", "ollama"] = "openai",
+        provider: Literal["openai", "ollama", "litellm"] = "openai",
         model: str = "gpt-4.1",
         temperature: float = 0.0,
         extra_rules: str = "",
         ollama_base_url: str = "http://localhost:11434",
         use_instructor: bool = False,
+        use_guardrails: bool = False,
+        litellm_api_base: str = "",
+        litellm_api_key: str = "",
     ) -> None:
         load_dotenv()
         self.provider = provider
         self.model = model
         self.use_instructor = use_instructor
+        self.use_guardrails = use_guardrails
 
         self.instructor_client = None
         if self.use_instructor:
@@ -187,6 +199,8 @@ class MultilingualSVOExtractor:
             model=model,
             temperature=temperature,
             ollama_base_url=ollama_base_url,
+            litellm_api_base=litellm_api_base,
+            litellm_api_key=litellm_api_key,
         )
 
         extract_system_prompt = EXTRACTION_SYSTEM_PROMPT
@@ -213,10 +227,12 @@ class MultilingualSVOExtractor:
 
     @staticmethod
     def _build_llm(
-        provider: Literal["openai", "ollama"],
+        provider: Literal["openai", "ollama", "litellm"],
         model: str,
         temperature: float,
         ollama_base_url: str,
+        litellm_api_base: str,
+        litellm_api_key: str,
     ):
         if provider == "openai":
             if not os.getenv("OPENAI_API_KEY"):
@@ -230,21 +246,110 @@ class MultilingualSVOExtractor:
                 )
             return ChatOllama(model=model, temperature=temperature, base_url=ollama_base_url)
 
+        if provider == "litellm":
+            if ChatLiteLLM is None:
+                raise ImportError(
+                    "langchain-community/litellm is not installed. Install dependencies with: pip install -r requirements.txt"
+                )
+            kwargs = {"model": model, "temperature": temperature}
+            if litellm_api_base:
+                kwargs["api_base"] = litellm_api_base
+            if litellm_api_key:
+                kwargs["api_key"] = litellm_api_key
+            return ChatLiteLLM(**kwargs)
+
         raise ValueError(f"Unsupported provider: {provider}")
 
     def extract(self, text: str) -> ExtractionResult:
         if self.use_instructor:
-            return self._extract_with_instructor(text)
+            result = self._extract_with_instructor(text)
+            return self._apply_guardrails_single(result)
         first_pass = self.extract_chain.invoke({"text": text})
         final_pass = self.refine_chain.invoke(
             {"text": text, "first_pass_json": first_pass.model_dump_json(indent=2, ensure_ascii=False)}
         )
-        return final_pass
+        return self._apply_guardrails_single(final_pass)
 
     def extract_by_verb(self, text: str) -> MultiActionExtractionResult:
         if self.use_instructor:
-            return self._extract_by_verb_with_instructor(text)
-        return self.multi_action_chain.invoke({"text": text})
+            result = self._extract_by_verb_with_instructor(text)
+            return self._apply_guardrails_multi(result)
+        result = self.multi_action_chain.invoke({"text": text})
+        return self._apply_guardrails_multi(result)
+
+    def _apply_guardrails_single(self, result: ExtractionResult) -> ExtractionResult:
+        if not self.use_guardrails:
+            return result
+
+        data = result.model_dump()
+        data["language"] = self._normalize_language(data.get("language", ""))
+        data["subject"] = data.get("subject", "").strip()
+        data["verb"] = data.get("verb", "").strip()
+        data["object"] = data.get("object", "").strip()
+        data["conditions"] = self._dedupe_conditions(data.get("conditions", []))
+        data["confidence"] = self._clamp_confidence(data.get("confidence", 0.0))
+
+        # Guardrail: if any core field becomes empty, keep original output instead of emitting invalid structure.
+        if not data["subject"] or not data["verb"] or not data["object"]:
+            return result
+
+        return ExtractionResult(**data)
+
+    def _apply_guardrails_multi(self, result: MultiActionExtractionResult) -> MultiActionExtractionResult:
+        if not self.use_guardrails:
+            return result
+
+        data = result.model_dump()
+        data["language"] = self._normalize_language(data.get("language", ""))
+        cleaned_actions = []
+        for action in data.get("actions", []):
+            subject = action.get("subject", "").strip()
+            verb = action.get("verb", "").strip()
+            obj = action.get("object", "").strip()
+            if not subject or not verb or not obj:
+                continue
+            cleaned_actions.append(
+                {
+                    "subject": subject,
+                    "verb": verb,
+                    "object": obj,
+                    "conditions": self._dedupe_conditions(action.get("conditions", [])),
+                }
+            )
+
+        if cleaned_actions:
+            data["actions"] = cleaned_actions
+        data["confidence"] = self._clamp_confidence(data.get("confidence", 0.0))
+        return MultiActionExtractionResult(**data)
+
+    @staticmethod
+    def _normalize_language(language: str) -> str:
+        lang = (language or "").strip().lower()
+        return lang if lang in SUPPORTED_LANGUAGES else "ko"
+
+    @staticmethod
+    def _clamp_confidence(confidence: float) -> float:
+        try:
+            value = float(confidence)
+        except (TypeError, ValueError):
+            return 0.0
+        return max(0.0, min(1.0, value))
+
+    @staticmethod
+    def _dedupe_conditions(conditions: list[dict]) -> list[dict]:
+        seen: set[tuple[str, str]] = set()
+        deduped: list[dict] = []
+        for c in conditions:
+            ctype = str(c.get("type", "other")).strip() or "other"
+            text = str(c.get("text", "")).strip()
+            if not text:
+                continue
+            key = (ctype, text)
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append({"type": ctype, "text": text})
+        return deduped
 
     def _extract_with_instructor(self, text: str) -> ExtractionResult:
         assert self.instructor_client is not None
@@ -295,9 +400,12 @@ def extract_one(
     text: str,
     model: str = "gpt-4.1",
     extra_rules_file: str = "",
-    provider: Literal["openai", "ollama"] = "openai",
+    provider: Literal["openai", "ollama", "litellm"] = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
+    use_guardrails: bool = False,
+    litellm_api_base: str = "",
+    litellm_api_key: str = "",
 ) -> dict:
     if not text.strip():
         raise ValueError("text must not be empty")
@@ -308,6 +416,9 @@ def extract_one(
         extra_rules=extra_rules,
         ollama_base_url=ollama_base_url,
         use_instructor=use_instructor,
+        use_guardrails=use_guardrails,
+        litellm_api_base=litellm_api_base,
+        litellm_api_key=litellm_api_key,
     )
     result = extractor.extract(text)
     return result.model_dump()
@@ -317,9 +428,12 @@ def extract_many(
     texts: list[str],
     model: str = "gpt-4.1",
     extra_rules_file: str = "",
-    provider: Literal["openai", "ollama"] = "openai",
+    provider: Literal["openai", "ollama", "litellm"] = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
+    use_guardrails: bool = False,
+    litellm_api_base: str = "",
+    litellm_api_key: str = "",
 ) -> list[dict]:
     extra_rules = _read_rules_file(extra_rules_file) if extra_rules_file else ""
     extractor = MultilingualSVOExtractor(
@@ -328,6 +442,9 @@ def extract_many(
         extra_rules=extra_rules,
         ollama_base_url=ollama_base_url,
         use_instructor=use_instructor,
+        use_guardrails=use_guardrails,
+        litellm_api_base=litellm_api_base,
+        litellm_api_key=litellm_api_key,
     )
     outputs: list[dict] = []
     for text in texts:
@@ -339,9 +456,12 @@ def extract_by_verb(
     text: str,
     model: str = "gpt-4.1",
     extra_rules_file: str = "",
-    provider: Literal["openai", "ollama"] = "openai",
+    provider: Literal["openai", "ollama", "litellm"] = "openai",
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
+    use_guardrails: bool = False,
+    litellm_api_base: str = "",
+    litellm_api_key: str = "",
 ) -> dict:
     if not text.strip():
         raise ValueError("text must not be empty")
@@ -352,6 +472,9 @@ def extract_by_verb(
         extra_rules=extra_rules,
         ollama_base_url=ollama_base_url,
         use_instructor=use_instructor,
+        use_guardrails=use_guardrails,
+        litellm_api_base=litellm_api_base,
+        litellm_api_key=litellm_api_key,
     )
     result = extractor.extract_by_verb(text)
     return result.model_dump()
@@ -362,12 +485,27 @@ def cli() -> None:
 
     parser = argparse.ArgumentParser(description="Multilingual SVO + Condition Extractor")
     parser.add_argument("--text", required=True, help="Input sentence")
-    parser.add_argument("--provider", default="openai", choices=["openai", "ollama"], help="LLM provider")
+    parser.add_argument(
+        "--provider",
+        default="openai",
+        choices=["openai", "ollama", "litellm"],
+        help="LLM provider",
+    )
     parser.add_argument("--model", default="gpt-4.1", help="Model name (OpenAI or Ollama local model)")
     parser.add_argument(
         "--ollama-base-url",
         default="http://localhost:11434",
         help="Ollama server URL (used when --provider ollama)",
+    )
+    parser.add_argument(
+        "--litellm-api-base",
+        default="",
+        help="LiteLLM API base URL (used when --provider litellm)",
+    )
+    parser.add_argument(
+        "--litellm-api-key",
+        default="",
+        help="LiteLLM API key (used when --provider litellm)",
     )
     parser.add_argument(
         "--extra-rules-file",
@@ -384,6 +522,11 @@ def cli() -> None:
         action="store_true",
         help="Use Instructor backend (OpenAI provider only) for stronger schema-constrained output",
     )
+    parser.add_argument(
+        "--use-guardrails",
+        action="store_true",
+        help="Enable post-extraction quality guardrails (dedupe/normalize/sanity checks)",
+    )
     args = parser.parse_args()
 
     if args.split_by_verb:
@@ -394,6 +537,9 @@ def cli() -> None:
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,
+            use_guardrails=args.use_guardrails,
+            litellm_api_base=args.litellm_api_base,
+            litellm_api_key=args.litellm_api_key,
         )
     else:
         result = extract_one(
@@ -403,6 +549,9 @@ def cli() -> None:
             provider=args.provider,
             ollama_base_url=args.ollama_base_url,
             use_instructor=args.use_instructor,
+            use_guardrails=args.use_guardrails,
+            litellm_api_base=args.litellm_api_base,
+            litellm_api_key=args.litellm_api_key,
         )
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

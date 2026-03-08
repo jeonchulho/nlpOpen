@@ -17,6 +17,9 @@ def run_benchmark(
     extra_rules_file: str,
     ollama_base_url: str,
     use_instructor: bool,
+    use_guardrails: bool,
+    litellm_api_base: str,
+    litellm_api_key: str,
 ) -> list[dict]:
     rows: list[dict] = []
     for model in models:
@@ -28,6 +31,9 @@ def run_benchmark(
                 provider=provider,
                 ollama_base_url=ollama_base_url,
                 use_instructor=use_instructor,
+                use_guardrails=use_guardrails,
+                litellm_api_base=litellm_api_base,
+                litellm_api_key=litellm_api_key,
             )
         else:
             report = evaluate(
@@ -37,6 +43,9 @@ def run_benchmark(
                 provider=provider,
                 ollama_base_url=ollama_base_url,
                 use_instructor=use_instructor,
+                use_guardrails=use_guardrails,
+                litellm_api_base=litellm_api_base,
+                litellm_api_key=litellm_api_key,
             )
 
         rows.append(
@@ -44,6 +53,7 @@ def run_benchmark(
                 "provider": provider,
                 "model": model,
                 "use_instructor": use_instructor,
+                "use_guardrails": use_guardrails,
                 "golden": golden,
                 "split_by_verb": split_by_verb,
                 "svo_macro_exact": report.get("svo_macro_exact"),
@@ -80,7 +90,12 @@ def cli() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Benchmark multiple models on the same golden set")
-    parser.add_argument("--provider", default="ollama", choices=["openai", "ollama"], help="LLM provider")
+    parser.add_argument(
+        "--provider",
+        default="ollama",
+        choices=["openai", "ollama", "litellm"],
+        help="LLM provider",
+    )
     parser.add_argument(
         "--models",
         required=True,
@@ -94,11 +109,14 @@ def cli() -> None:
         default="http://localhost:11434",
         help="Ollama server URL (used when --provider ollama)",
     )
+    parser.add_argument("--litellm-api-base", default="", help="LiteLLM API base URL")
+    parser.add_argument("--litellm-api-key", default="", help="LiteLLM API key")
     parser.add_argument(
         "--use-instructor",
         action="store_true",
         help="Use Instructor backend (OpenAI provider only)",
     )
+    parser.add_argument("--use-guardrails", action="store_true", help="Enable post-extraction guardrails")
     parser.add_argument(
         "--out-json",
         default="reports/benchmark_models.json",
@@ -123,6 +141,9 @@ def cli() -> None:
         extra_rules_file=args.extra_rules_file,
         ollama_base_url=args.ollama_base_url,
         use_instructor=args.use_instructor,
+        use_guardrails=args.use_guardrails,
+        litellm_api_base=args.litellm_api_base,
+        litellm_api_key=args.litellm_api_key,
     )
 
     out_json = Path(args.out_json)

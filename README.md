@@ -43,6 +43,19 @@ python src/extractor.py \
 	--provider openai \
 	--model gpt-4.1 \
 	--use-instructor \
+	--use-guardrails \
+	--text "내일 오후 3시까지 주문 취소해 주세요."
+```
+
+LiteLLM 추출(멀티 모델 운영):
+
+```bash
+python src/extractor.py \
+	--provider litellm \
+	--model openai/gpt-4o-mini \
+	--litellm-api-base "https://your-litellm-gateway" \
+	--litellm-api-key "YOUR_LITELLM_KEY" \
+	--use-guardrails \
 	--text "내일 오후 3시까지 주문 취소해 주세요."
 ```
 
@@ -98,6 +111,7 @@ python src/evaluate.py \
 	--provider openai \
 	--model gpt-4.1 \
 	--use-instructor \
+	--use-guardrails \
 	--golden data/golden_set_50.jsonl
 ```
 
@@ -242,6 +256,7 @@ python src/benchmark_models.py \
 	--models qwen2.5:14b,qwen2.5:32b \
 	--golden data/golden_set_verb_12.jsonl \
 	--split-by-verb \
+	--use-guardrails \
 	--extra-rules-file prompts/tuned_rules.txt \
 	--out-json reports/benchmark_models.json \
 	--out-md reports/benchmark_models.md
