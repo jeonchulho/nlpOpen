@@ -8,7 +8,21 @@ LATIN_LANGS = {"en", "de", "fr"}
 
 
 def _normalize_findall_matches(matches: list[Any]) -> list[str]:
-    """Normalize re.findall outputs so both str and tuple captures are handled safely."""
+    """`re.findall` 결과를 평탄한 문자열 리스트로 정규화합니다.
+
+    `re.findall`은 패턴에 캡처 그룹이 여러 개 있으면 `tuple` 목록을,
+    그룹이 하나면 `str` 목록을 반환합니다. 이 유틸은 두 경우를 모두
+    안전하게 문자열 리스트로 통일합니다.
+
+    Args:
+        matches: `re.findall` 반환값(문자열 목록 또는 튜플 목록).
+
+    Returns:
+        공백 제거가 적용된 문자열 토큰 목록.
+
+    예시:
+        _normalize_findall_matches([("Alice", "Sales team"), "Bob"]) -> ["Alice", "Sales team", "Bob"]
+    """
     out: list[str] = []
     for item in matches:
         if isinstance(item, tuple):
@@ -24,6 +38,14 @@ def _normalize_findall_matches(matches: list[Any]) -> list[str]:
 
 
 def _is_latin_noise_token(value: str) -> bool:
+    """라틴권 언어에서 불용어/연결어 노이즈 토큰인지 판별합니다.
+
+    수신자/발신자 후보를 정제할 때 의미 없는 연결어(`and`, `the`, `de` 등)를
+    사람 이름으로 오인하는 문제를 줄이기 위해 사용합니다.
+
+    예시:
+        _is_latin_noise_token("and") -> True
+    """
     return bool(
         re.search(
             r"\b(and|or|by|to|from|the|a|an|und|oder|zu|von|der|die|das|et|au|aux|de|du|des|la|le|les)\b",
@@ -34,6 +56,13 @@ def _is_latin_noise_token(value: str) -> bool:
 
 
 def _is_latin_department_like(value: str) -> bool:
+    """팀/부서명처럼 보이는 토큰인지 판별합니다.
+
+    사람 이름 후보에서 `Sales team` 같은 조직명 토큰을 제외할 때 사용합니다.
+
+    예시:
+        _is_latin_department_like("Sales team") -> True
+    """
     return bool(
         re.search(
             r"\b(team|department|division|abteilung|vertriebsteam|service|equipe|équipe|departement|département)\b",
@@ -44,6 +73,13 @@ def _is_latin_department_like(value: str) -> bool:
 
 
 def _is_latin_temporal_token(value: str) -> bool:
+    """시간 표현(예: yesterday, heute 등)인지 판별합니다.
+
+    시간 단어가 person으로 잘못 분류되는 오탐을 줄이기 위한 보조 필터입니다.
+
+    예시:
+        _is_latin_temporal_token("gestern") -> True
+    """
     return bool(
         re.search(
             r"\b(yesterday|today|tomorrow|gestern|heute|morgen|hier|demain|aujourd'hui|aujourdhui)\b",
@@ -54,28 +90,72 @@ def _is_latin_temporal_token(value: str) -> bool:
 
 
 def build_spacy_nlp(model_name: str, spacy_module: Any):
+    """spaCy 모델을 로드하고 실패 시 `xx` blank 모델로 대체합니다.
+
+    실서비스에서 모델 다운로드 누락/버전 불일치가 있어도 후처리 파이프라인이
+    완전히 중단되지 않도록 방어적으로 동작합니다.
+
+    Args:
+        model_name: 로드할 spaCy 모델명.
+        spacy_module: import된 spaCy 모듈 객체.
+
+    Returns:
+        spaCy Language 객체 또는 None.
+
+    예시:
+        build_spacy_nlp("xx_ent_wiki_sm", spacy)
+    """
     if spacy_module is None:
         return None
     try:
         return spacy_module.load(model_name)
     except Exception:
-        # Fallback keeps the postprocessor alive even when model download is missing.
+        # 모델 다운로드가 없어도 후처리 파이프라인은 동작하도록 유지한다.
         return spacy_module.blank("xx")
 
 
 def extract_single(extractor: Any, text: str):
+    """spaCy 단일 추출 후 postprocess/guardrails를 적용합니다.
+
+    처리 순서:
+        1) 규칙 기반 단일 추출
+        2) spaCy 신호 기반 조건 보정
+        3) guardrails(구조/신뢰도 보정)
+
+    예시:
+        extract_single(extractor, "어제 보낸 쪽지 요약해줘")
+    """
     result = extractor._extract_spacy_only(text)
     result = extractor._apply_spacy_postprocess_single(result, text)
     return extractor._apply_guardrails_single(result)
 
 
 def extract_multi(extractor: Any, text: str):
+    """spaCy split-by-verb 추출 후 postprocess/guardrails를 적용합니다.
+
+    단일 추출과 동일하게 후처리/가드레일을 적용하되,
+    액션별 condition 스코프를 유지하도록 multi 경로를 사용합니다.
+
+    예시:
+        extract_multi(extractor, "Summarize and send the message to Alice")
+    """
     result = extractor._extract_by_verb_spacy_only(text)
     result = extractor._apply_spacy_postprocess_multi(result, text)
     return extractor._apply_guardrails_multi(result)
 
 
 def build_spacy_single_payload(extractor: Any, text: str) -> dict[str, Any]:
+    """spaCy/규칙 시그널을 이용해 단일 액션 payload를 구성합니다.
+
+    language/verb/object/conditions/subject를 규칙 기반으로 채워
+    LLM 없이도 스키마에 맞는 결과를 만들기 위한 함수입니다.
+
+    Returns:
+        `ExtractionResult`로 변환 가능한 dict payload.
+
+    예시:
+        build_spacy_single_payload(extractor, "배송지 주소를 오늘 변경해줘")
+    """
     lang = extractor._detect_language(text)
     verb = extractor._pick_main_verb(text, lang)
     obj = extractor._pick_object(text, lang)
@@ -97,6 +177,19 @@ def build_spacy_single_payload(extractor: Any, text: str) -> dict[str, Any]:
 
 
 def build_spacy_multi_payload(extractor: Any, text: str) -> dict[str, Any]:
+    """요약/전송 스코프를 분리해 다중 액션 payload를 구성합니다.
+
+    핵심 동작:
+        - summarize 힌트가 있으면 1차 액션(요약) 생성
+        - send 힌트/수신자 존재 여부로 2차 액션(전송) 생성 여부 결정
+        - action별 condition(person/department/time/manner)를 분리 축적
+
+    Returns:
+        `MultiActionExtractionResult`로 변환 가능한 dict payload.
+
+    예시:
+        build_spacy_multi_payload(extractor, "정리해서 영업팀에 보내줘")
+    """
     lang = extractor._detect_language(text)
     actions: list[dict[str, Any]] = []
     scoped = extractor._extract_action_scoped_entities(text, "summarize")
@@ -110,7 +203,7 @@ def build_spacy_multi_payload(extractor: Any, text: str) -> dict[str, Any]:
 
     text_lower = text.lower()
     summarize_hints = list(extractor._get_summarize_hint_keywords(lang))
-    # Include action-scope summarize hints to absorb inflections like German "zusammen...".
+    # 독일어 "zusammen..." 같은 어형 변형도 잡히도록 action-scope 힌트를 합친다.
     summarize_hints.extend(extractor.action_scope_verb_hints.get("summarize", []))
     summarize_hint = any(k and k.lower() in text_lower for k in summarize_hints)
     if summarize_hint:
@@ -195,6 +288,22 @@ def build_spacy_multi_payload(extractor: Any, text: str) -> dict[str, Any]:
 
 
 def extract_action_scoped_entities(extractor: Any, text: str, verb_text: str) -> dict[str, set[str]]:
+    """행동 의도(요약/전송)에 맞춰 발신자/수신자 엔티티를 추출합니다.
+
+    언어별 action-scope regex를 적용한 뒤,
+    라틴권 노이즈/시간어/부서형 표현을 정제하여 person/department 집합을 반환합니다.
+
+    Args:
+        extractor: 규칙/설정을 보유한 추출기 인스턴스.
+        text: 원문 요청 텍스트.
+        verb_text: 현재 액션 문맥(예: summarize, send).
+
+    Returns:
+        {"persons": set[str], "departments": set[str]} 형태의 스코프 엔티티.
+
+    예시:
+        extract_action_scoped_entities(extractor, "... send to Alice and Sales team", "send")
+    """
     persons: set[str] = set()
     departments: set[str] = set()
     lang = extractor._detect_language(text)
@@ -202,6 +311,13 @@ def extract_action_scoped_entities(extractor: Any, text: str, verb_text: str) ->
     lang_scope = extractor.action_scope_patterns_by_lang.get(lang, extractor.action_scope_patterns_by_lang.get("en", {}))
 
     def _collect(patterns: list[str], use_icase: bool) -> list[str]:
+        """정규식 매칭 결과를 수집하고 tuple/string 결과를 정규화합니다.
+
+        내부 유틸로, 패턴 배열을 순회하며 모든 매칭 토큰을 한 리스트로 합칩니다.
+
+        예시:
+            _collect([r"to\\s+([A-Z][a-z]+)"], True)
+        """
         out: list[str] = []
         for patt in patterns:
             flags = re.I if use_icase else 0
@@ -283,6 +399,17 @@ def extract_action_scoped_entities(extractor: Any, text: str, verb_text: str) ->
 
 
 def extract_object_action_modifiers(extractor: Any, object_text: str) -> list[str]:
+    """object 구절 안에 들어있는 action 성격 수식어를 추출합니다.
+
+    예: "보낸 쪽지"에서 "보낸"을 action 조건으로 분리.
+    언어별 skip/action 토큰 정책을 함께 적용해 노이즈를 줄입니다.
+
+    Returns:
+        action 수식어 토큰 문자열 리스트.
+
+    예시:
+        extract_object_action_modifiers(extractor, "보낸 쪽지") -> ["보낸"]
+    """
     if not object_text.strip():
         return []
 
@@ -317,6 +444,17 @@ def extract_spacy_signals(
     generic_person_stopwords: set[str],
     department_suffixes: str,
 ) -> dict[str, set[str]]:
+    """regex + spaCy NER 시그널로 person/department/action을 추출합니다.
+
+    언어별 패턴 매칭 결과와 spaCy 엔터티(`PERSON`, `ORG`)를 결합하고,
+    오탐 필터(불용어, 시간어, 비인명 토큰)를 적용해 최종 신호 집합을 만듭니다.
+
+    Returns:
+        {"persons": set[str], "departments": set[str], "actions": set[str]}.
+
+    예시:
+        extract_spacy_signals(extractor, "Send to Alice and Sales team", set(), set(), r"(team)$")
+    """
     persons: set[str] = set()
     departments: set[str] = set()
     actions: set[str] = set()
@@ -408,6 +546,16 @@ def spacy_refine_conditions(
     generic_person_stopwords: set[str] | None = None,
     department_suffixes: str = "",
 ) -> list[dict]:
+    """전역/스코프 시그널로 condition 타입을 보정하고 중복을 제거합니다.
+
+    보정 규칙:
+        - 시그널에 있으면 person/department/action 타입으로 재분류
+        - add_global_entities 플래그에 따라 전역/스코프 엔티티 추가
+        - object 내부 action 수식어를 조건에 보강
+
+    예시:
+        spacy_refine_conditions(extractor, [{"type": "other", "text": "Alice"}], text)
+    """
     signals = extract_spacy_signals(
         extractor,
         text,

@@ -15,6 +15,11 @@ def build_llm(
     chat_ollama_cls: Any,
     chat_litellm_cls: Any,
 ):
+    """provider 설정에 맞는 LLM 클라이언트를 생성합니다.
+
+    예시:
+        build_llm("openai", "gpt-4.1", 0.0, "", "", "", ChatOpenAI, None, None)
+    """
     if provider == "openai":
         if not os.getenv("OPENAI_API_KEY"):
             raise EnvironmentError("OPENAI_API_KEY is not set.")
@@ -46,6 +51,11 @@ def build_llm(
 
 
 def extract_single(extractor: Any, text: str):
+    """단일 액션 추출을 instructor 또는 LLM 체인으로 수행합니다.
+
+    예시:
+        extract_single(extractor, "Please summarize this message")
+    """
     if extractor.use_instructor:
         result = extractor._extract_with_instructor(text)
         result = extractor._apply_spacy_postprocess_single(result, text)
@@ -61,6 +71,11 @@ def extract_single(extractor: Any, text: str):
 
 
 def extract_multi(extractor: Any, text: str):
+    """split-by-verb 다중 액션 추출을 수행합니다.
+
+    예시:
+        extract_multi(extractor, "Summarize and send the message to Alice")
+    """
     if extractor.use_instructor:
         result = extractor._extract_by_verb_with_instructor(text)
         result = extractor._apply_spacy_postprocess_multi(result, text)

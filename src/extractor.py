@@ -45,6 +45,11 @@ except ImportError:  # pragma: no cover
 
 
 def _as_float(value: object, default: float) -> float:
+    """값을 float으로 안전하게 변환하고 실패 시 기본값을 반환합니다.
+
+    예시:
+        _as_float("0.7", 0.5) -> 0.7
+    """
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -52,6 +57,11 @@ def _as_float(value: object, default: float) -> float:
 
 
 def _as_bool(value: object, default: bool) -> bool:
+    """문자열/숫자 형태의 bool 유사 값을 안전하게 변환합니다.
+
+    예시:
+        _as_bool("yes", False) -> True
+    """
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
@@ -66,6 +76,11 @@ def _as_bool(value: object, default: bool) -> bool:
 
 
 def _as_str_list(value: object) -> list[str]:
+    """스칼라/리스트 입력을 비어 있지 않은 문자열 리스트로 정규화합니다.
+
+    예시:
+        _as_str_list([" send ", "forward"]) -> ["send", "forward"]
+    """
     if isinstance(value, str):
         s = value.strip()
         return [s] if s else []
@@ -82,6 +97,11 @@ DEFAULT_RULES_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / 
 
 
 def _load_extraction_rules_config(path: str) -> dict:
+    """JSON 규칙 파일을 로드하고 최상위 스키마를 검증합니다.
+
+    예시:
+        _load_extraction_rules_config("config/extraction_rules.json")
+    """
     p = Path(path)
     if not p.exists():
         raise FileNotFoundError(f"rules config file not found: {path}")
@@ -98,6 +118,21 @@ def _normalize_rule_tables(config: dict | None) -> tuple[
     dict[str, str],
     dict[str, list[str]],
 ]:
+    """내장 기본 규칙과 동적 config override를 병합합니다.
+
+    Args:
+        config: 규칙 JSON dict. None이면 내장 기본값만 사용합니다.
+
+    Returns:
+        (verb_patterns, default_verbs, object_rules, default_objects, manner_tokens)
+        형태의 병합된 규칙 테이블 튜플.
+
+    Raises:
+        없음(구조가 맞지 않는 항목은 무시하고 기본값을 유지).
+
+    예시:
+        _normalize_rule_tables({"default_verb_by_lang": {"en": ["ask"]}})
+    """
     verb_patterns = {k: list(v) for k, v in VERB_PATTERNS_BY_LANG.items()}
     default_verbs = dict(DEFAULT_VERB_BY_LANG)
     object_rules = {k: list(v) for k, v in OBJECT_RULES_BY_LANG.items()}
@@ -283,7 +318,17 @@ MULTI_ACTION_HUMAN_PROMPT = """
 
 
 class MultilingualSVOExtractor:
-    """Two-pass extractor for high precision SVO + condition extraction."""
+    """다국어 요청에서 SVO + 조건(condition)을 추출하는 핵심 추출기입니다.
+
+    지원 모드:
+        - LLM 모드(openai/ollama/litellm): 1차 추출 + 정제(refine) 2단계
+        - spaCy 모드(spacy): 규칙 기반 추출 + spaCy 신호 보정
+
+    보조 기능:
+        - guardrails: 출력 구조/신뢰도 보정
+        - spacy postprocess: person/department/action 타입 재분류
+        - split-by-verb: 복합 요청을 다중 액션으로 분해
+    """
 
     def __init__(
         self,
@@ -300,6 +345,28 @@ class MultilingualSVOExtractor:
         litellm_api_key: str = "",
         rules_config_file: str = "",
     ) -> None:
+        """추출기 실행 환경과 동적 규칙 테이블을 초기화합니다.
+
+        Args:
+            provider: 추출 provider(`openai`, `ollama`, `litellm`, `spacy`).
+            model: LLM 모델명(LLM provider에서 사용).
+            temperature: LLM 온도.
+            extra_rules: 시스템 프롬프트에 주입할 추가 규칙 텍스트.
+            ollama_base_url: Ollama 서버 URL.
+            use_instructor: OpenAI + Instructor 강제 스키마 모드 사용 여부.
+            use_guardrails: 결과 보정 로직 활성화 여부.
+            use_spacy_postprocess: spaCy 후처리 보정 활성화 여부.
+            spacy_model: spaCy 모델명.
+            litellm_api_base: LiteLLM API base URL.
+            litellm_api_key: LiteLLM API key.
+            rules_config_file: 동적 규칙 JSON 경로(미지정 시 기본값 사용).
+
+        Raises:
+            ValueError: provider/use_instructor 조합이 유효하지 않을 때.
+            ImportError: 필요한 의존성이 설치되지 않았을 때.
+            EnvironmentError: API 키가 필요하지만 설정되지 않았을 때.
+            FileNotFoundError: 규칙 파일 경로가 잘못되었을 때.
+        """
         load_dotenv()
         self.provider = provider
         self.model = model
@@ -585,6 +652,17 @@ class MultilingualSVOExtractor:
 
     @staticmethod
     def _pick_lang_value(values_by_lang: dict[str, list[str]], lang: str, default_lang: str, fallback: str) -> str:
+        """언어별 값 맵에서 우선순위(`lang` -> `default_lang` -> `fallback`)로 값을 선택합니다.
+
+        Args:
+            values_by_lang: 언어 코드별 후보 문자열 리스트.
+            lang: 현재 판별된 언어 코드.
+            default_lang: 현재 언어에 값이 없을 때 사용할 기본 언어 코드.
+            fallback: 모든 후보가 없을 때 마지막으로 사용할 값.
+
+        예시:
+            self._pick_lang_value({"en": ["customer"]}, "fr", "en", "user") -> "customer"
+        """
         return common_pick_lang_value(values_by_lang, lang, default_lang, fallback)
 
     @staticmethod
@@ -596,6 +674,13 @@ class MultilingualSVOExtractor:
         fallback: str,
         case_insensitive_langs: set[str] | None = None,
     ) -> str:
+        """언어별 후보 패턴 중 텍스트에 실제로 매칭되는 값을 우선 선택합니다.
+
+        매칭이 없으면 `default_lang` 후보의 첫 값을 사용하고, 그마저 없으면 fallback을 반환합니다.
+
+        예시:
+            self._pick_lang_value_by_text({"en": ["send", "forward"]}, "en", "please forward", "en", "request")
+        """
         return common_pick_lang_value_by_text(
             values_by_lang=values_by_lang,
             lang=lang,
@@ -614,6 +699,13 @@ class MultilingualSVOExtractor:
         litellm_api_base: str,
         litellm_api_key: str,
     ):
+        """provider 설정에 맞는 LLM 클라이언트를 생성합니다.
+
+        `spacy` provider는 LLM을 사용하지 않으므로 `None`을 반환합니다.
+
+        Returns:
+            ChatOpenAI/ChatOllama/ChatLiteLLM 인스턴스 또는 None.
+        """
         return llm_build_backend(
             provider=provider,
             model=model,
@@ -627,20 +719,38 @@ class MultilingualSVOExtractor:
         )
 
     def extract(self, text: str) -> ExtractionResult:
+        """입력 텍스트에서 단일 액션을 추출합니다.
+
+        예시:
+            extractor.extract("Please cancel my subscription by Friday.")
+        """
         if self.provider == "spacy":
             return spacy_extract_single_backend(self, text)
         return llm_extract_single_backend(self, text)
 
     def extract_by_verb(self, text: str) -> MultiActionExtractionResult:
+        """동사 단위로 분해하여 다중 액션을 추출합니다.
+
+        예시:
+            extractor.extract_by_verb("Summarize and send the message to Alice.")
+        """
         if self.provider == "spacy":
             return spacy_extract_multi_backend(self, text)
         return llm_extract_multi_backend(self, text)
 
     def _extract_spacy_only(self, text: str) -> ExtractionResult:
+        """spaCy 규칙 기반 단일 추출 payload를 `ExtractionResult`로 변환합니다.
+
+        이 함수는 LLM 경로를 완전히 우회합니다.
+        """
         payload = build_spacy_single_payload(self, text)
         return ExtractionResult(**payload)
 
     def _extract_by_verb_spacy_only(self, text: str) -> MultiActionExtractionResult:
+        """spaCy 규칙 기반 split-by-verb payload를 모델 객체로 변환합니다.
+
+        `actions` 항목은 `VerbAction`으로 재검증하여 타입 안전성을 확보합니다.
+        """
         payload = build_spacy_multi_payload(self, text)
         actions = [VerbAction(**a) for a in payload.get("actions", [])]
         return MultiActionExtractionResult(
@@ -650,6 +760,11 @@ class MultilingualSVOExtractor:
         )
 
     def _pick_summarize_object(self, text: str, lang: str) -> str:
+        """요약 의도에 맞는 object 라벨을 언어별 규칙로 선택합니다.
+
+        예시:
+            self._pick_summarize_object("Summarize the message", "en")
+        """
         detailed = self._pick_detailed_object(text, lang)
         if detailed:
             return detailed
@@ -660,6 +775,11 @@ class MultilingualSVOExtractor:
         return self._pick_object(text, lang)
 
     def _get_summarize_hint_keywords(self, lang: str) -> list[str]:
+        """default/global/language 스코프의 요약 힌트 키워드를 병합합니다.
+
+        예시:
+            self._get_summarize_hint_keywords("en")
+        """
         merged: list[str] = []
         for key in ("default", "all", "*", lang):
             for kw in self.summarize_hint_keywords_by_lang.get(key, []):
@@ -669,9 +789,19 @@ class MultilingualSVOExtractor:
 
     @staticmethod
     def _detect_language(text: str) -> str:
+        """공용 휴리스틱 탐지기로 요청 언어를 판별합니다.
+
+        예시:
+            self._detect_language("Résume les messages") -> "fr"
+        """
         return common_detect_language(text)
 
     def _pick_main_verb(self, text: str, lang: str = "ko") -> str:
+        """설정된 정규식 규칙에서 최적의 핵심 동사를 선택합니다.
+
+        예시:
+            self._pick_main_verb("Please send the report", "en") -> "send"
+        """
         return common_pick_main_verb(
             text=text,
             lang=lang,
@@ -680,6 +810,11 @@ class MultilingualSVOExtractor:
         )
 
     def _pick_object(self, text: str, lang: str = "ko") -> str:
+        """detailed/object/fallback 규칙 계층으로 canonical object를 선택합니다.
+
+        예시:
+            self._pick_object("Update the shipping address", "en")
+        """
         detailed = self._pick_detailed_object(text, lang)
         if detailed:
             return detailed
@@ -698,6 +833,11 @@ class MultilingualSVOExtractor:
         return self._pick_lang_value(self.default_object_candidates_by_lang, lang, "en", "request target")
 
     def _pick_detailed_object(self, text: str, lang: str) -> str:
+        """canonical 정규화 전에 detailed object 구절을 추출합니다.
+
+        예시:
+            self._pick_detailed_object("messages John sent yesterday summarize", "en")
+        """
         rule_obj = self.object_detail_rules_by_lang.get(lang) or self.object_detail_rules_by_lang.get("en") or {}
         command_hint = str(rule_obj.get("command_hint", "")).strip()
         patterns = [str(p) for p in rule_obj.get("patterns", []) if str(p).strip()]
@@ -714,6 +854,11 @@ class MultilingualSVOExtractor:
 
     @staticmethod
     def _normalize_detailed_object(detailed: str, lang: str) -> str:
+        """detailed object 구절을 안정적인 canonical 라벨로 정규화합니다.
+
+        예시:
+            _normalize_detailed_object("messages John sent yesterday", "en") -> "message"
+        """
         cand = re.sub(r"\s+", " ", (detailed or "").strip())
         if not cand:
             return ""
@@ -747,6 +892,11 @@ class MultilingualSVOExtractor:
         return cand
 
     def _pick_object_phrase_fallback(self, text: str, lang: str) -> str:
+        """직접 object 규칙이 실패했을 때 fallback 구절 추출을 수행합니다.
+
+        예시:
+            self._pick_object_phrase_fallback("배송지 주소를 변경", "ko")
+        """
         rule_obj = self.object_phrase_fallback_by_lang.get(lang, {})
         capture_pattern = str(rule_obj.get("capture_pattern", "")).strip()
         if not capture_pattern:
@@ -773,6 +923,16 @@ class MultilingualSVOExtractor:
         return ""
 
     def _pick_subject(self, text: str, lang: str, obj: str, verb: str) -> str:
+        """주어(subject)를 토픽 패턴/술어 규칙/기본값 순서로 선택합니다.
+
+        동작 개요:
+            1) 언어별 topic_pattern으로 명시된 주제를 우선 추출
+            2) 특정 술어(가능/실패/중단 등)일 때 object를 주어로 승격
+            3) 아무 조건도 맞지 않으면 언어 기본 subject 사용
+
+        예시:
+            self._pick_subject("배송이 지연됩니다", "ko", "배송", "지연됩니다") -> "배송"
+        """
         fallback = self._pick_lang_value(self.subject_by_lang, lang, "en", "customer")
         rules = self.subject_picker_rules_by_lang.get(lang)
         if not isinstance(rules, dict):
@@ -802,7 +962,7 @@ class MultilingualSVOExtractor:
                     if cand and cand.casefold() not in topic_exclude:
                         return cand
             except re.error:
-                # Ignore broken custom regex and keep fallback path alive.
+                # 사용자 제공 정규식 오류가 있어도 전체 추출 파이프라인은 유지한다.
                 pass
 
         obj_norm = (obj or "").strip()
@@ -824,6 +984,10 @@ class MultilingualSVOExtractor:
         return fallback
 
     def _extract_time_conditions(self, text: str, lang: str = "ko") -> list[dict]:
+        """시간 조건(time)을 추출하고, 포괄 관계가 있는 중복 표현을 정리합니다.
+
+        예: "월,화요일"이 있으면 하위 토큰("월", "화요일")은 제거합니다.
+        """
         conds: list[dict] = []
         patterns = [*self.time_patterns_common, *self.time_patterns_by_lang.get(lang, [])]
         flags = re.I if lang in self.time_case_insensitive_langs else 0
@@ -831,14 +995,13 @@ class MultilingualSVOExtractor:
             for m in re.finditer(p, text, flags=flags):
                 conds.append({"type": "time", "text": m.group(0).strip()})
 
-        # Keep longer time spans and drop shorter tokens subsumed by them
-        # (e.g., keep "월,화요일" and remove "월", "화요일").
+        # 더 긴 기간/요일 묶음 표현을 우선 유지하고 하위 토큰을 제거한다.
         deduped = self._dedupe_conditions(conds)
         texts = [str(c.get("text", "")).strip() for c in deduped]
         ordered = sorted(texts, key=len, reverse=True)
 
         def _normalize_for_compare(value: str) -> str:
-            # Normalize spacing/punctuation differences to collapse equivalent time ranges.
+            # 공백/쉼표 차이를 정규화해 동일한 기간 표현을 같은 값으로 비교한다.
             return re.sub(r"[\s,]", "", value)
 
         kept: list[str] = []
@@ -856,6 +1019,11 @@ class MultilingualSVOExtractor:
         return [c for c in deduped if str(c.get("text", "")).strip() in kept_set]
 
     def _extract_manner_conditions(self, text: str, lang: str = "ko") -> list[dict]:
+        """전달 방식/형태(manner) 조건을 추출합니다.
+
+        예: "이메일로", "by email", "PDF로" 등.
+        요약 의도 키워드도 action 분해를 위해 manner로 함께 기록합니다.
+        """
         conds: list[dict] = []
         tokens = self.manner_tokens_by_lang.get(lang, [])
         if lang != "en":
@@ -864,7 +1032,7 @@ class MultilingualSVOExtractor:
             if token in text:
                 conds.append({"type": "manner", "text": token})
 
-        # Treat summarize intent as a manner-like condition for request decomposition.
+        # 요청 분해(split-by-verb)를 위해 요약 의도를 manner 조건으로도 남긴다.
         lower_text = text.lower()
         summarize_hints = self._get_summarize_hint_keywords(lang)
         for hint in summarize_hints:
@@ -874,6 +1042,7 @@ class MultilingualSVOExtractor:
         return conds
 
     def _extract_additional_conditions(self, text: str, lang: str = "ko") -> list[dict]:
+        """추가 조건(reason/constraint/location 등)을 언어별 패턴으로 추출합니다."""
         conds: list[dict] = []
         patterns = self.additional_condition_patterns_by_lang.get(lang, [])
         if not patterns:
@@ -889,9 +1058,14 @@ class MultilingualSVOExtractor:
 
     @staticmethod
     def _build_spacy_nlp(model_name: str):
+        """spaCy 모델을 초기화합니다. 모델이 없으면 backend fallback 로직을 따릅니다."""
         return spacy_build_backend(model_name=model_name, spacy_module=spacy)
 
     def _apply_spacy_postprocess_single(self, result: ExtractionResult, text: str) -> ExtractionResult:
+        """단일 추출 결과에 spaCy 기반 condition 보정 후처리를 적용합니다.
+
+        `object_text`를 함께 넘겨 object 내부 action 수식어까지 반영합니다.
+        """
         if not self.use_spacy_postprocess:
             return result
 
@@ -906,6 +1080,10 @@ class MultilingualSVOExtractor:
     def _apply_spacy_postprocess_multi(
         self, result: MultiActionExtractionResult, text: str
     ) -> MultiActionExtractionResult:
+        """다중 액션 결과 각 항목에 spaCy 후처리를 적용합니다.
+
+        multi 모드에서는 action별 스코프가 달라서 `add_global_entities=False`를 사용합니다.
+        """
         if not self.use_spacy_postprocess:
             return result
 
@@ -932,6 +1110,10 @@ class MultilingualSVOExtractor:
         verb_text: str = "",
         add_global_entities: bool = True,
     ) -> list[dict]:
+        """spaCy backend의 condition 타입 보정 로직을 호출하는 래퍼입니다.
+
+        내부적으로 person/department/action 재분류와 중복 제거를 수행합니다.
+        """
         return spacy_refine_conditions_backend(
             extractor=self,
             conditions=conditions,
@@ -945,12 +1127,26 @@ class MultilingualSVOExtractor:
         )
 
     def _extract_action_scoped_entities(self, text: str, verb_text: str) -> dict[str, set[str]]:
+        """동사 문맥(요약/전송)에 맞춰 action 스코프 엔티티를 추출합니다.
+
+        Returns:
+            {"persons": set[str], "departments": set[str]} 형태의 엔티티 맵.
+        """
         return spacy_extract_action_scoped_entities_backend(self, text, verb_text)
 
     def _extract_object_action_modifiers(self, object_text: str) -> list[str]:
+        """object 문자열 내부의 action 수식어 토큰을 추출합니다.
+
+        예: "보낸 쪽지" -> ["보낸"]
+        """
         return spacy_extract_object_action_modifiers_backend(self, object_text)
 
     def _extract_spacy_signals(self, text: str) -> dict[str, set[str]]:
+        """spaCy + 규칙 기반 시그널(person/department/action)을 추출합니다.
+
+        Returns:
+            {"persons": set[str], "departments": set[str], "actions": set[str]}.
+        """
         return spacy_extract_signals_backend(
             extractor=self,
             text=text,
@@ -960,6 +1156,11 @@ class MultilingualSVOExtractor:
         )
 
     def _apply_guardrails_single(self, result: ExtractionResult) -> ExtractionResult:
+        """단일 추출 결과에 안전 가드레일을 적용합니다.
+
+        언어값 정규화, 필드 공백 제거, condition 중복 제거, confidence 범위 보정(0~1)을 수행합니다.
+        핵심 필드(subject/verb/object)가 비면 원본 결과를 유지해 구조 손상을 방지합니다.
+        """
         if not self.use_guardrails:
             return result
 
@@ -971,13 +1172,17 @@ class MultilingualSVOExtractor:
         data["conditions"] = self._dedupe_conditions(data.get("conditions", []))
         data["confidence"] = self._clamp_confidence(data.get("confidence", 0.0))
 
-        # Guardrail: if any core field becomes empty, keep original output instead of emitting invalid structure.
+        # 핵심 필드가 비어버리면 무효 구조를 내보내지 않고 원본 결과를 유지한다.
         if not data["subject"] or not data["verb"] or not data["object"]:
             return result
 
         return ExtractionResult(**data)
 
     def _apply_guardrails_multi(self, result: MultiActionExtractionResult) -> MultiActionExtractionResult:
+        """다중 액션 결과에 안전 가드레일을 적용합니다.
+
+        비어 있는 액션은 제거하고, 남은 액션의 조건을 정규화/중복 제거합니다.
+        """
         if not self.use_guardrails:
             return result
 
@@ -1006,11 +1211,28 @@ class MultilingualSVOExtractor:
 
     @staticmethod
     def _normalize_language(language: str) -> str:
+        """언어 코드를 정규화하고 미지원 값은 `en`으로 fallback합니다.
+
+        입력 공백/대소문자를 정리한 뒤 지원 언어 집합에 없으면
+        운영 안정성을 위해 기본값 `en`을 반환합니다.
+
+        예시:
+            _normalize_language("EN") -> "en"
+            _normalize_language("xx") -> "en"
+        """
         lang = (language or "").strip().lower()
         return lang if lang in SUPPORTED_LANGUAGES else "en"
 
     @staticmethod
     def _clamp_confidence(confidence: float) -> float:
+        """confidence 값을 0.0~1.0 범위로 제한합니다.
+
+        숫자 변환이 실패하면 0.0을 반환합니다.
+
+        예시:
+            _clamp_confidence(1.2) -> 1.0
+            _clamp_confidence(-0.1) -> 0.0
+        """
         try:
             value = float(confidence)
         except (TypeError, ValueError):
@@ -1019,6 +1241,14 @@ class MultilingualSVOExtractor:
 
     @staticmethod
     def _dedupe_conditions(conditions: list[dict]) -> list[dict]:
+        """(type, text) 기준으로 condition 중복을 제거합니다.
+
+        비어 있는 text는 버리고, 최초 등장 순서를 보존합니다.
+
+        예시:
+            [{"type": "time", "text": "어제"}, {"type": "time", "text": "어제"}]
+            -> [{"type": "time", "text": "어제"}]
+        """
         seen: set[tuple[str, str]] = set()
         deduped: list[dict] = []
         for c in conditions:
@@ -1034,6 +1264,15 @@ class MultilingualSVOExtractor:
         return deduped
 
     def _extract_with_instructor(self, text: str) -> ExtractionResult:
+        """Instructor 백엔드로 2단계(초안/정제) 단일 추출을 수행합니다.
+
+        처리 순서:
+            1) EXTRACTION 프롬프트로 1차 구조화 추출
+            2) 1차 JSON을 REFINE 프롬프트에 넣어 최종 정제
+
+        Raises:
+            AssertionError: instructor client가 초기화되지 않은 경우.
+        """
         assert self.instructor_client is not None
         first_pass = self.instructor_client.chat.completions.create(
             model=self.model,
@@ -1060,6 +1299,13 @@ class MultilingualSVOExtractor:
         return final_pass
 
     def _extract_by_verb_with_instructor(self, text: str) -> MultiActionExtractionResult:
+        """Instructor 백엔드로 split-by-verb 다중 추출을 수행합니다.
+
+        문장 내 복수 동작을 `actions[]` 스키마로 직접 생성합니다.
+
+        Raises:
+            AssertionError: instructor client가 초기화되지 않은 경우.
+        """
         assert self.instructor_client is not None
         return self.instructor_client.chat.completions.create(
             model=self.model,
@@ -1072,6 +1318,13 @@ class MultilingualSVOExtractor:
 
 
 def _read_rules_file(path: str) -> str:
+    """추가 프롬프트 규칙 텍스트 파일을 UTF-8로 읽습니다.
+
+    파일이 없으면 `FileNotFoundError`를 발생시켜 호출자에게 명확히 알립니다.
+
+    예시:
+        _read_rules_file("prompts/tuned_rules.txt")
+    """
     p = Path(path)
     if not p.exists():
         raise FileNotFoundError(f"rules file not found: {path}")
@@ -1092,6 +1345,35 @@ def extract_one(
     litellm_api_base: str = "",
     litellm_api_key: str = "",
 ) -> dict:
+    """단일 텍스트 추출용 편의 API입니다.
+
+    내부에서 `MultilingualSVOExtractor`를 생성하고 `extract()` 결과를 dict로 반환합니다.
+    CLI가 아닌 코드 경로에서 간단히 호출할 때 사용합니다.
+
+    Args:
+        text: 추출할 원문 문자열.
+        model: 사용할 모델명.
+        extra_rules_file: 추가 프롬프트 규칙 파일 경로.
+        rules_config_file: 동적 규칙 JSON 파일 경로.
+        provider: 추출 provider.
+        ollama_base_url: Ollama 서버 주소.
+        use_instructor: Instructor 모드 사용 여부.
+        use_guardrails: guardrails 적용 여부.
+        use_spacy_postprocess: spaCy 후처리 적용 여부.
+        spacy_model: spaCy 모델명.
+        litellm_api_base: LiteLLM API base URL.
+        litellm_api_key: LiteLLM API key.
+
+    Returns:
+        단일 추출 결과 dict(language/subject/verb/object/conditions/confidence).
+
+    Raises:
+        ValueError: text가 비어 있을 때.
+        FileNotFoundError: extra_rules_file 또는 rules_config_file 경로가 잘못되었을 때.
+
+    예시:
+        extract_one("Please cancel the subscription", provider="spacy")
+    """
     if not text.strip():
         raise ValueError("text must not be empty")
     extra_rules = _read_rules_file(extra_rules_file) if extra_rules_file else ""
@@ -1126,6 +1408,23 @@ def extract_many(
     litellm_api_base: str = "",
     litellm_api_key: str = "",
 ) -> list[dict]:
+    """여러 텍스트를 일괄 추출하는 편의 API입니다.
+
+    extractor 인스턴스를 한 번만 생성하여 반복 호출하므로 개별 호출보다 효율적입니다.
+
+    Args:
+        texts: 추출할 문자열 목록.
+        model/provider/...: `extract_one`과 동일.
+
+    Returns:
+        입력 순서를 유지한 결과 dict 목록.
+
+    Raises:
+        FileNotFoundError: extra_rules_file 또는 rules_config_file 경로가 잘못되었을 때.
+
+    예시:
+        extract_many(["요약해줘", "보내줘"], provider="spacy")
+    """
     extra_rules = _read_rules_file(extra_rules_file) if extra_rules_file else ""
     extractor = MultilingualSVOExtractor(
         provider=provider,
@@ -1160,6 +1459,24 @@ def extract_by_verb(
     litellm_api_base: str = "",
     litellm_api_key: str = "",
 ) -> dict:
+    """동사 분해(split-by-verb) 추출용 편의 API입니다.
+
+    하나의 문장에서 복수 액션이 포함된 요청을 `actions[]` 형태로 반환합니다.
+
+    Args:
+        text: 추출할 원문 문자열.
+        model/provider/...: `extract_one`과 동일.
+
+    Returns:
+        다중 액션 결과 dict(language/actions/confidence).
+
+    Raises:
+        ValueError: text가 비어 있을 때.
+        FileNotFoundError: extra_rules_file 또는 rules_config_file 경로가 잘못되었을 때.
+
+    예시:
+        extract_by_verb("요약해서 보내줘", provider="spacy")
+    """
     if not text.strip():
         raise ValueError("text must not be empty")
     extra_rules = _read_rules_file(extra_rules_file) if extra_rules_file else ""
@@ -1181,6 +1498,14 @@ def extract_by_verb(
 
 
 def cli() -> None:
+    """다국어 추출을 위한 CLI 진입점입니다.
+
+    provider/spacy 후처리/guardrails/split-by-verb 등 실행 옵션을 받아
+    추출 결과를 JSON으로 출력합니다.
+
+    예시:
+        python src/extractor.py --provider spacy --split-by-verb --text "정리해서 보내줘"
+    """
     import argparse
 
     parser = argparse.ArgumentParser(description="Multilingual SVO + Condition Extractor")
