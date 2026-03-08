@@ -1,0 +1,50 @@
+{"id": 1, "text": "오늘 오후 3시까지 주문 취소해 주세요.", "gold": {"subject": "고객", "verb": "취소해 주세요", "object": "주문", "conditions": [{"type": "time", "text": "오늘 오후 3시까지"}]}}
+{"id": 2, "text": "내일 배송 예정인 노트북 배송지를 부산 해운대로 변경하고 싶어요.", "gold": {"subject": "고객", "verb": "변경하고 싶어요", "object": "노트북 배송지", "conditions": [{"type": "time", "text": "내일 배송 예정인"}, {"type": "location", "text": "부산 해운대"}]}}
+{"id": 3, "text": "포인트가 2만 점 이상일 때만 결제에 사용되나요?", "gold": {"subject": "포인트", "verb": "사용되나요", "object": "결제", "conditions": [{"type": "constraint", "text": "2만 점 이상일 때만"}]}}
+{"id": 4, "text": "환불은 카드 결제 건에 한해서 영업일 기준 5일 이내 처리해 주세요.", "gold": {"subject": "상담원", "verb": "처리해 주세요", "object": "환불", "conditions": [{"type": "constraint", "text": "카드 결제 건에 한해서"}, {"type": "time", "text": "영업일 기준 5일 이내"}]}}
+{"id": 5, "text": "해외에서 접속할 때 로그인 인증 문자가 오지 않습니다.", "gold": {"subject": "인증 문자", "verb": "오지 않습니다", "object": "로그인", "conditions": [{"type": "location", "text": "해외에서"}, {"type": "time", "text": "접속할 때"}]}}
+{"id": 6, "text": "비밀번호를 3회 이상 틀리면 계정이 잠기나요?", "gold": {"subject": "계정", "verb": "잠기나요", "object": "계정", "conditions": [{"type": "constraint", "text": "비밀번호를 3회 이상 틀리면"}]}}
+{"id": 7, "text": "이번 달 말까지 정기결제 해지 신청 부탁드립니다.", "gold": {"subject": "고객", "verb": "부탁드립니다", "object": "정기결제 해지 신청", "conditions": [{"type": "time", "text": "이번 달 말까지"}]}}
+{"id": 8, "text": "아이폰 앱에서만 장바구니가 비어 보입니다.", "gold": {"subject": "장바구니", "verb": "비어 보입니다", "object": "장바구니", "conditions": [{"type": "location", "text": "아이폰 앱에서만"}]}}
+{"id": 9, "text": "쿠폰은 첫 구매 고객에게만 자동 적용되나요?", "gold": {"subject": "쿠폰", "verb": "자동 적용되나요", "object": "첫 구매 고객", "conditions": [{"type": "constraint", "text": "첫 구매 고객에게만"}]}}
+{"id": 10, "text": "주문번호 1023의 세금계산서를 이메일로 다시 보내 주세요.", "gold": {"subject": "상담원", "verb": "다시 보내 주세요", "object": "세금계산서", "conditions": [{"type": "other", "text": "주문번호 1023"}, {"type": "manner", "text": "이메일로"}]}}
+{"id": 11, "text": "창고 이전 때문에 다음 주 월요일까지 출고가 지연됩니다.", "gold": {"subject": "출고", "verb": "지연됩니다", "object": "출고", "conditions": [{"type": "reason", "text": "창고 이전 때문에"}, {"type": "time", "text": "다음 주 월요일까지"}]}}
+{"id": 12, "text": "결제 실패 시 10분 후에 다시 시도하면 되나요?", "gold": {"subject": "고객", "verb": "다시 시도하면 되나요", "object": "결제", "conditions": [{"type": "time", "text": "10분 후에"}, {"type": "constraint", "text": "결제 실패 시"}]}}
+{"id": 13, "text": "회원 탈퇴 후 30일 이내에는 계정 복구가 가능합니까?", "gold": {"subject": "계정", "verb": "가능합니까", "object": "계정 복구", "conditions": [{"type": "time", "text": "30일 이내"}, {"type": "constraint", "text": "회원 탈퇴 후"}]}}
+{"id": 14, "text": "법인카드로 결제한 건만 월별 영수증을 발급해 주세요.", "gold": {"subject": "상담원", "verb": "발급해 주세요", "object": "월별 영수증", "conditions": [{"type": "constraint", "text": "법인카드로 결제한 건만"}]}}
+{"id": 15, "text": "주말에는 고객센터 전화 연결이 안 되나요?", "gold": {"subject": "고객센터 전화 연결", "verb": "안 되나요", "object": "고객센터 전화 연결", "conditions": [{"type": "time", "text": "주말에는"}]}}
+{"id": 16, "text": "앱 알림을 켠 상태에서만 배송 추적 푸시가 오나요?", "gold": {"subject": "배송 추적 푸시", "verb": "오나요", "object": "배송 추적 푸시", "conditions": [{"type": "constraint", "text": "앱 알림을 켠 상태에서만"}]}}
+{"id": 17, "text": "고장 접수는 사진 3장 이상 첨부해야 처리됩니다.", "gold": {"subject": "고장 접수", "verb": "처리됩니다", "object": "고장 접수", "conditions": [{"type": "constraint", "text": "사진 3장 이상 첨부해야"}]}}
+{"id": 18, "text": "오늘 주문하면 제주도는 언제 도착하나요?", "gold": {"subject": "배송", "verb": "도착하나요", "object": "제주도 배송", "conditions": [{"type": "time", "text": "오늘 주문하면"}, {"type": "location", "text": "제주도"}]}}
+{"id": 19, "text": "오전 9시 이전 문의는 당일 회신 원칙인가요?", "gold": {"subject": "문의", "verb": "회신 원칙인가요", "object": "당일 회신", "conditions": [{"type": "time", "text": "오전 9시 이전"}]}}
+{"id": 20, "text": "상품이 파손된 경우에만 무료 교환이 가능한가요?", "gold": {"subject": "무료 교환", "verb": "가능한가요", "object": "무료 교환", "conditions": [{"type": "constraint", "text": "상품이 파손된 경우에만"}]}}
+{"id": 21, "text": "대량 주문이라서 배송비를 할인해 주실 수 있나요?", "gold": {"subject": "상담원", "verb": "할인해 주실 수 있나요", "object": "배송비", "conditions": [{"type": "reason", "text": "대량 주문이라서"}]}}
+{"id": 22, "text": "영문 이름으로 발행된 영수증을 국문으로 재발행해 주세요.", "gold": {"subject": "상담원", "verb": "재발행해 주세요", "object": "영수증", "conditions": [{"type": "constraint", "text": "영문 이름으로 발행된"}, {"type": "manner", "text": "국문으로"}]}}
+{"id": 23, "text": "다음 달부터 자동이체일을 매월 5일로 바꾸고 싶습니다.", "gold": {"subject": "고객", "verb": "바꾸고 싶습니다", "object": "자동이체일", "conditions": [{"type": "time", "text": "다음 달부터"}, {"type": "time", "text": "매월 5일로"}]}}
+{"id": 24, "text": "오늘 안에 설치 기사 방문 시간을 문자로 알려 주세요.", "gold": {"subject": "상담원", "verb": "알려 주세요", "object": "설치 기사 방문 시간", "conditions": [{"type": "time", "text": "오늘 안에"}, {"type": "manner", "text": "문자로"}]}}
+{"id": 25, "text": "쿠폰 만료일이 지났는데도 결제 화면에 계속 표시됩니다.", "gold": {"subject": "쿠폰", "verb": "계속 표시됩니다", "object": "결제 화면", "conditions": [{"type": "constraint", "text": "쿠폰 만료일이 지났는데도"}]}}
+{"id": 26, "text": "온라인 주문 건은 매장 수령으로만 변경 가능합니다.", "gold": {"subject": "온라인 주문 건", "verb": "변경 가능합니다", "object": "매장 수령", "conditions": [{"type": "constraint", "text": "매장 수령으로만"}]}}
+{"id": 27, "text": "내일 오전 회의 전에 견적서를 PDF로 보내 주세요.", "gold": {"subject": "상담원", "verb": "보내 주세요", "object": "견적서", "conditions": [{"type": "time", "text": "내일 오전 회의 전에"}, {"type": "manner", "text": "PDF로"}]}}
+{"id": 28, "text": "회원 등급이 골드일 때 포인트 적립률이 올라가나요?", "gold": {"subject": "포인트 적립률", "verb": "올라가나요", "object": "포인트 적립률", "conditions": [{"type": "constraint", "text": "회원 등급이 골드일 때"}]}}
+{"id": 29, "text": "결함 제품은 수령 후 7일 내에만 반품 신청이 가능합니다.", "gold": {"subject": "반품 신청", "verb": "가능합니다", "object": "결함 제품", "conditions": [{"type": "time", "text": "수령 후 7일 내에만"}]}}
+{"id": 30, "text": "해외 결제라서 카드사 승인 시간이 오래 걸립니다.", "gold": {"subject": "카드사 승인 시간", "verb": "오래 걸립니다", "object": "카드사 승인", "conditions": [{"type": "reason", "text": "해외 결제라서"}]}}
+{"id": 31, "text": "같은 주소로 두 건 이상 주문하면 묶음 배송되나요?", "gold": {"subject": "주문", "verb": "묶음 배송되나요", "object": "주문", "conditions": [{"type": "constraint", "text": "같은 주소로 두 건 이상 주문하면"}]}}
+{"id": 32, "text": "이 상품은 재고가 있을 때만 당일 출고됩니다.", "gold": {"subject": "이 상품", "verb": "당일 출고됩니다", "object": "이 상품", "conditions": [{"type": "constraint", "text": "재고가 있을 때만"}]}}
+{"id": 33, "text": "보안 정책 때문에 비밀번호는 90일마다 변경해야 합니다.", "gold": {"subject": "비밀번호", "verb": "변경해야 합니다", "object": "비밀번호", "conditions": [{"type": "reason", "text": "보안 정책 때문에"}, {"type": "time", "text": "90일마다"}]}}
+{"id": 34, "text": "반품 택배는 편의점 접수로만 가능한가요?", "gold": {"subject": "반품 택배", "verb": "가능한가요", "object": "편의점 접수", "conditions": [{"type": "constraint", "text": "편의점 접수로만"}]}}
+{"id": 35, "text": "고객센터 운영시간 이후에는 챗봇으로 문의해 주세요.", "gold": {"subject": "고객", "verb": "문의해 주세요", "object": "챗봇", "conditions": [{"type": "time", "text": "고객센터 운영시간 이후에는"}]}}
+{"id": 36, "text": "재발급 카드는 등록된 집 주소로만 배송해 주세요.", "gold": {"subject": "상담원", "verb": "배송해 주세요", "object": "재발급 카드", "conditions": [{"type": "constraint", "text": "등록된 집 주소로만"}]}}
+{"id": 37, "text": "오늘 중으로 처리되지 않으면 주문을 전부 취소하겠습니다.", "gold": {"subject": "고객", "verb": "취소하겠습니다", "object": "주문 전부", "conditions": [{"type": "constraint", "text": "오늘 중으로 처리되지 않으면"}]}}
+{"id": 38, "text": "예약 변경은 출발 24시간 전까지 무료인가요?", "gold": {"subject": "예약 변경", "verb": "무료인가요", "object": "예약 변경", "conditions": [{"type": "time", "text": "출발 24시간 전까지"}]}}
+{"id": 39, "text": "법인 회원은 분기 말에만 세금계산서 일괄 발급이 됩니다.", "gold": {"subject": "세금계산서 일괄 발급", "verb": "됩니다", "object": "법인 회원", "conditions": [{"type": "time", "text": "분기 말에만"}]}}
+{"id": 40, "text": "앱을 최신 버전으로 업데이트한 뒤에도 오류가 반복됩니다.", "gold": {"subject": "오류", "verb": "반복됩니다", "object": "앱", "conditions": [{"type": "constraint", "text": "최신 버전으로 업데이트한 뒤에도"}]}}
+{"id": 41, "text": "등기우편으로 보낸 서류만 본인확인에 인정되나요?", "gold": {"subject": "서류", "verb": "인정되나요", "object": "본인확인", "conditions": [{"type": "constraint", "text": "등기우편으로 보낸 서류만"}]}}
+{"id": 42, "text": "결제일이 공휴일이면 다음 영업일에 자동 출금되나요?", "gold": {"subject": "자동 출금", "verb": "되나요", "object": "자동 출금", "conditions": [{"type": "constraint", "text": "결제일이 공휴일이면"}, {"type": "time", "text": "다음 영업일에"}]}}
+{"id": 43, "text": "오늘 오후 6시 이후 주문 건은 내일 순차 발송됩니다.", "gold": {"subject": "주문 건", "verb": "순차 발송됩니다", "object": "주문 건", "conditions": [{"type": "time", "text": "오늘 오후 6시 이후"}, {"type": "time", "text": "내일"}]}}
+{"id": 44, "text": "배송기사님이 도착하기 30분 전에 전화 주실 수 있나요?", "gold": {"subject": "배송기사님", "verb": "전화 주실 수 있나요", "object": "고객", "conditions": [{"type": "time", "text": "도착하기 30분 전에"}]}}
+{"id": 45, "text": "신규 가입자에게는 첫 달 이용료를 면제해 주세요.", "gold": {"subject": "상담원", "verb": "면제해 주세요", "object": "첫 달 이용료", "conditions": [{"type": "constraint", "text": "신규 가입자에게는"}]}}
+{"id": 46, "text": "사진 용량이 10MB를 넘으면 첨부가 실패합니다.", "gold": {"subject": "첨부", "verb": "실패합니다", "object": "사진", "conditions": [{"type": "constraint", "text": "사진 용량이 10MB를 넘으면"}]}}
+{"id": 47, "text": "입금 확인 후에만 제작이 시작되니 일정 확인 부탁드립니다.", "gold": {"subject": "제작", "verb": "시작되니", "object": "제작", "conditions": [{"type": "constraint", "text": "입금 확인 후에만"}]}}
+{"id": 48, "text": "매주 금요일에는 정기 점검으로 서비스가 중단됩니다.", "gold": {"subject": "서비스", "verb": "중단됩니다", "object": "서비스", "conditions": [{"type": "time", "text": "매주 금요일에는"}, {"type": "reason", "text": "정기 점검으로"}]}}
+{"id": 49, "text": "지금 결제하면 사은품을 함께 받을 수 있나요?", "gold": {"subject": "고객", "verb": "받을 수 있나요", "object": "사은품", "conditions": [{"type": "time", "text": "지금 결제하면"}]}}
+{"id": 50, "text": "기존 계약이 만료될 때 자동으로 갱신되지 않게 설정해 주세요.", "gold": {"subject": "상담원", "verb": "설정해 주세요", "object": "자동 갱신 차단", "conditions": [{"type": "time", "text": "기존 계약이 만료될 때"}]}}
