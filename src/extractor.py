@@ -244,7 +244,12 @@ EXTRACTION_SYSTEM_PROMPT = """
 1) 반드시 원문 의미를 보존한다.
 2) subject/verb/object는 짧고 명확한 구문으로 추출한다.
 3) 조건정보는 시간/장소/방법/이유/제약/행위/사람/부서를 최대한 빠짐없이 분리한다.
-4) 사람명, 조직명(팀/부/본부 등), 보조 행위(정리/검토/승인 등)는 조건에 각각 person/department/action으로 분류한다.
+4) 발신/수신 관계가 명확하면 person 대신 역할 타입을 우선 사용한다.
+    - 보낸 주체: sender
+    - 받는 사람: receiver
+    - 받는 부서/팀: receiver_department
+5) 사람명, 조직명(팀/부/본부 등), 보조 행위(정리/검토/승인 등)는 조건에 각각 person/department/action으로 분류한다.
+    단, sender/receiver/receiver_department가 성립하면 해당 역할 타입을 우선한다.
 5) 근거가 부족하면 confidence를 낮춘다.
 6) 추측 금지. 원문에 없는 정보는 넣지 않는다.
 7) 출력은 반드시 스키마에 맞는 JSON 구조만 반환한다.
@@ -270,7 +275,9 @@ EXTRACTION_HUMAN_PROMPT = """
 7) fr: "Merci d'annuler l'abonnement à partir du mois prochain."
     -> subject="client", verb="annuler", object="abonnement", conditions=[(type=time, text=à partir du mois prochain)]
 8) ko: "전철호가 보낸 쪽지 정리해서 이선정, 영업팀에게 보내줘"
-    -> subject="고객", verb="보내줘", object="쪽지 정리본", conditions=[(type=person, text=전철호), (type=person, text=이선정), (type=department, text=영업팀), (type=action, text=정리해서)]
+    -> subject="고객", verb="보내줘", object="쪽지 정리본", conditions=[(type=sender, text=전철호), (type=receiver, text=이선정), (type=receiver_department, text=영업팀), (type=action, text=정리해서)]
+9) en: "What message did John send to Alice and Bob today?"
+    -> subject="customer", verb="query", object="message", conditions=[(type=time, text=today), (type=sender, text=John), (type=receiver, text=Alice), (type=receiver, text=Bob)]
 
 [입력 문장]
 {text}
@@ -284,6 +291,7 @@ REFINE_SYSTEM_PROMPT = """
 1) 원문과 1차 추출 결과를 비교해 누락/오추출을 교정한다.
 2) subject/verb/object의 역할이 틀리면 바로잡는다.
 3) 조건정보를 가능한 한 세분화해서 보완한다.
+    발신/수신 관계가 있으면 person/department보다 sender/receiver/receiver_department를 우선한다.
 4) 과도한 확신(confidence)은 낮춘다.
 5) 출력은 반드시 동일 스키마 JSON만 반환한다.
 """.strip()
@@ -309,8 +317,9 @@ MULTI_ACTION_SYSTEM_PROMPT = """
 1) 동작 순서는 원문 등장 순서를 따른다.
 2) 공통 조건은 각 동작에 필요한 범위에서 중복 포함할 수 있다.
 3) 접속 구조("~해서", "그리고", "후에", "then")를 근거로 동작을 분리한다.
-4) 원문에 없는 동작을 생성하지 않는다.
-5) 출력은 반드시 지정된 JSON 스키마를 따른다.
+4) 발신/수신 관계가 명확하면 person/department보다 sender/receiver/receiver_department를 우선한다.
+5) 원문에 없는 동작을 생성하지 않는다.
+6) 출력은 반드시 지정된 JSON 스키마를 따른다.
 """.strip()
 
 
