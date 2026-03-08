@@ -58,6 +58,12 @@ def detect_language(text: str) -> str:
         w in lower
         for w in [
             "bonjour",
+            "qu'est-ce",
+            "quest-ce",
+            "qu est ce",
+            "aujourd'hui",
+            "aujourdhui",
+            "tableau",
             "envoyer",
             "equipe",
             "équipe",
@@ -73,6 +79,9 @@ def detect_language(text: str) -> str:
     if any(
         w in lower
         for w in [
+            "was hat",
+            "heute",
+            "tafel",
             "bitte",
             "schicken",
             "sende",

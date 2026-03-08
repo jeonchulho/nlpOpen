@@ -16,12 +16,12 @@ try:
     from extractor_llm_backend import build_llm as llm_build_backend, extract_multi as llm_extract_multi_backend, extract_single as llm_extract_single_backend
     from extractor_spacy_backend import build_spacy_multi_payload, build_spacy_nlp as spacy_build_backend, build_spacy_single_payload, extract_action_scoped_entities as spacy_extract_action_scoped_entities_backend, extract_multi as spacy_extract_multi_backend, extract_object_action_modifiers as spacy_extract_object_action_modifiers_backend, extract_single as spacy_extract_single_backend, extract_spacy_signals as spacy_extract_signals_backend, spacy_refine_conditions as spacy_refine_conditions_backend
     from extractor_common import detect_language as common_detect_language, pick_lang_value as common_pick_lang_value, pick_lang_value_by_text as common_pick_lang_value_by_text, pick_main_verb as common_pick_main_verb
-    from extractor_defaults import ACTION_SCOPE_CLEANUP, ACTION_SCOPE_PATTERNS_BY_LANG, ACTION_SCOPE_VERB_HINTS, ADDITIONAL_CONDITION_PATTERNS_BY_LANG, DEFAULT_OBJECT_BY_LANG, DEFAULT_VERB_BY_LANG, DEPARTMENT_SUFFIXES, GENERIC_PERSON_STOPWORDS, KOREAN_PERSON_STOPWORDS, MANNER_TOKENS_BY_LANG, NON_PERSON_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ACTION_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ATTRIBUTE_SUFFIXES_BY_LANG, OBJECT_ACTION_MODIFIER_PATTERNS_BY_LANG, OBJECT_ACTION_MODIFIER_SKIP_TOKENS_BY_LANG, OBJECT_DETAIL_RULES_BY_LANG, OBJECT_PHRASE_FALLBACK_BY_LANG, OBJECT_RULES_BY_LANG, SPACY_ONLY_CONFIDENCE, SPACY_ONLY_MULTI_CONFIDENCE, SPACY_ONLY_SUBJECT_BY_LANG, SPACY_REFINE_ACTION_EXCLUDED_TYPES, SPACY_SIGNAL_DEPARTMENT_SUFFIX_PATTERN_JA, SPACY_SIGNAL_DEPT_PATTERN, SPACY_SIGNAL_JA_PERSON_PREFIXES, SPACY_SIGNAL_LATIN_TIME_SUFFIX_PATTERN, SPACY_SIGNAL_PATTERNS_BY_LANG, SPACY_SIGNAL_PERSON_TIME_SUFFIX_PATTERN, SUBJECT_PICKER_RULES_BY_LANG, SUMMARIZE_HINT_KEYWORDS, SUMMARIZE_OBJECT_RULES_BY_LANG, SUMMARIZE_VERB_BY_LANG, SUPPORTED_LANGUAGES, TIME_CASE_INSENSITIVE_LANGS, TIME_PATTERNS_BY_LANG, TIME_PATTERNS_COMMON, VERB_PATTERNS_BY_LANG
+    from extractor_defaults import ACTION_SCOPE_CLEANUP, ACTION_SCOPE_PATTERNS_BY_LANG, ACTION_SCOPE_VERB_HINTS, ADDITIONAL_CONDITION_PATTERNS_BY_LANG, DEFAULT_OBJECT_BY_LANG, DEFAULT_VERB_BY_LANG, DEPARTMENT_SUFFIXES, GENERIC_PERSON_STOPWORDS, KOREAN_PERSON_STOPWORDS, MANNER_TOKENS_BY_LANG, NON_PERSON_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ACTION_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ATTRIBUTE_SUFFIXES_BY_LANG, OBJECT_ACTION_MODIFIER_PATTERNS_BY_LANG, OBJECT_ACTION_MODIFIER_SKIP_TOKENS_BY_LANG, OBJECT_BARE_PHRASE_FALLBACK_BY_LANG, OBJECT_DETAIL_RULES_BY_LANG, OBJECT_PHRASE_FALLBACK_BY_LANG, OBJECT_RULES_BY_LANG, QUERY_VERB_BY_LANG, QUESTION_PATTERNS_BY_LANG, SPACY_ONLY_CONFIDENCE, SPACY_ONLY_MULTI_CONFIDENCE, SPACY_ONLY_SUBJECT_BY_LANG, SPACY_REFINE_ACTION_EXCLUDED_TYPES, SPACY_SIGNAL_DEPARTMENT_SUFFIX_PATTERN_JA, SPACY_SIGNAL_DEPT_PATTERN, SPACY_SIGNAL_JA_PERSON_PREFIXES, SPACY_SIGNAL_LATIN_TIME_SUFFIX_PATTERN, SPACY_SIGNAL_PATTERNS_BY_LANG, SPACY_SIGNAL_PERSON_TIME_SUFFIX_PATTERN, SUBJECT_PICKER_RULES_BY_LANG, SUMMARIZE_HINT_KEYWORDS, SUMMARIZE_OBJECT_RULES_BY_LANG, SUMMARIZE_VERB_BY_LANG, SUPPORTED_LANGUAGES, TIME_CASE_INSENSITIVE_LANGS, TIME_PATTERNS_BY_LANG, TIME_PATTERNS_COMMON, VERB_PATTERNS_BY_LANG
 except ImportError:  # pragma: no cover
     from src.extractor_llm_backend import build_llm as llm_build_backend, extract_multi as llm_extract_multi_backend, extract_single as llm_extract_single_backend
     from src.extractor_spacy_backend import build_spacy_multi_payload, build_spacy_nlp as spacy_build_backend, build_spacy_single_payload, extract_action_scoped_entities as spacy_extract_action_scoped_entities_backend, extract_multi as spacy_extract_multi_backend, extract_object_action_modifiers as spacy_extract_object_action_modifiers_backend, extract_single as spacy_extract_single_backend, extract_spacy_signals as spacy_extract_signals_backend, spacy_refine_conditions as spacy_refine_conditions_backend
     from src.extractor_common import detect_language as common_detect_language, pick_lang_value as common_pick_lang_value, pick_lang_value_by_text as common_pick_lang_value_by_text, pick_main_verb as common_pick_main_verb
-    from src.extractor_defaults import ACTION_SCOPE_CLEANUP, ACTION_SCOPE_PATTERNS_BY_LANG, ACTION_SCOPE_VERB_HINTS, ADDITIONAL_CONDITION_PATTERNS_BY_LANG, DEFAULT_OBJECT_BY_LANG, DEFAULT_VERB_BY_LANG, DEPARTMENT_SUFFIXES, GENERIC_PERSON_STOPWORDS, KOREAN_PERSON_STOPWORDS, MANNER_TOKENS_BY_LANG, NON_PERSON_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ACTION_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ATTRIBUTE_SUFFIXES_BY_LANG, OBJECT_ACTION_MODIFIER_PATTERNS_BY_LANG, OBJECT_ACTION_MODIFIER_SKIP_TOKENS_BY_LANG, OBJECT_DETAIL_RULES_BY_LANG, OBJECT_PHRASE_FALLBACK_BY_LANG, OBJECT_RULES_BY_LANG, SPACY_ONLY_CONFIDENCE, SPACY_ONLY_MULTI_CONFIDENCE, SPACY_ONLY_SUBJECT_BY_LANG, SPACY_REFINE_ACTION_EXCLUDED_TYPES, SPACY_SIGNAL_DEPARTMENT_SUFFIX_PATTERN_JA, SPACY_SIGNAL_DEPT_PATTERN, SPACY_SIGNAL_JA_PERSON_PREFIXES, SPACY_SIGNAL_LATIN_TIME_SUFFIX_PATTERN, SPACY_SIGNAL_PATTERNS_BY_LANG, SPACY_SIGNAL_PERSON_TIME_SUFFIX_PATTERN, SUBJECT_PICKER_RULES_BY_LANG, SUMMARIZE_HINT_KEYWORDS, SUMMARIZE_OBJECT_RULES_BY_LANG, SUMMARIZE_VERB_BY_LANG, SUPPORTED_LANGUAGES, TIME_CASE_INSENSITIVE_LANGS, TIME_PATTERNS_BY_LANG, TIME_PATTERNS_COMMON, VERB_PATTERNS_BY_LANG
+    from src.extractor_defaults import ACTION_SCOPE_CLEANUP, ACTION_SCOPE_PATTERNS_BY_LANG, ACTION_SCOPE_VERB_HINTS, ADDITIONAL_CONDITION_PATTERNS_BY_LANG, DEFAULT_OBJECT_BY_LANG, DEFAULT_VERB_BY_LANG, DEPARTMENT_SUFFIXES, GENERIC_PERSON_STOPWORDS, KOREAN_PERSON_STOPWORDS, MANNER_TOKENS_BY_LANG, NON_PERSON_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ACTION_TOKENS_BY_LANG, OBJECT_ACTION_MODIFIER_ATTRIBUTE_SUFFIXES_BY_LANG, OBJECT_ACTION_MODIFIER_PATTERNS_BY_LANG, OBJECT_ACTION_MODIFIER_SKIP_TOKENS_BY_LANG, OBJECT_BARE_PHRASE_FALLBACK_BY_LANG, OBJECT_DETAIL_RULES_BY_LANG, OBJECT_PHRASE_FALLBACK_BY_LANG, OBJECT_RULES_BY_LANG, QUERY_VERB_BY_LANG, QUESTION_PATTERNS_BY_LANG, SPACY_ONLY_CONFIDENCE, SPACY_ONLY_MULTI_CONFIDENCE, SPACY_ONLY_SUBJECT_BY_LANG, SPACY_REFINE_ACTION_EXCLUDED_TYPES, SPACY_SIGNAL_DEPARTMENT_SUFFIX_PATTERN_JA, SPACY_SIGNAL_DEPT_PATTERN, SPACY_SIGNAL_JA_PERSON_PREFIXES, SPACY_SIGNAL_LATIN_TIME_SUFFIX_PATTERN, SPACY_SIGNAL_PATTERNS_BY_LANG, SPACY_SIGNAL_PERSON_TIME_SUFFIX_PATTERN, SUBJECT_PICKER_RULES_BY_LANG, SUMMARIZE_HINT_KEYWORDS, SUMMARIZE_OBJECT_RULES_BY_LANG, SUMMARIZE_VERB_BY_LANG, SUPPORTED_LANGUAGES, TIME_CASE_INSENSITIVE_LANGS, TIME_PATTERNS_BY_LANG, TIME_PATTERNS_COMMON, VERB_PATTERNS_BY_LANG
 
 try:
     import instructor
@@ -195,6 +195,9 @@ class Condition(BaseModel):
         "constraint",
         "action",
         "person",
+        "sender",
+        "receiver",
+        "receiver_department",
         "department",
         "other",
     ] = Field(
@@ -339,7 +342,7 @@ class MultilingualSVOExtractor:
         ollama_base_url: str = "http://localhost:11434",
         use_instructor: bool = False,
         use_guardrails: bool = False,
-        use_spacy_postprocess: bool = False,
+        use_spacy_postprocess: bool | None = None,
         spacy_model: str = "xx_ent_wiki_sm",
         litellm_api_base: str = "",
         litellm_api_key: str = "",
@@ -372,7 +375,10 @@ class MultilingualSVOExtractor:
         self.model = model
         self.use_instructor = use_instructor
         self.use_guardrails = use_guardrails
-        self.use_spacy_postprocess = use_spacy_postprocess
+        if use_spacy_postprocess is None:
+            self.use_spacy_postprocess = provider == "spacy"
+        else:
+            self.use_spacy_postprocess = bool(use_spacy_postprocess)
         self.spacy_nlp = self._build_spacy_nlp(spacy_model) if self.use_spacy_postprocess else None
 
         resolved_rules_path = rules_config_file or str(DEFAULT_RULES_CONFIG_PATH)
@@ -395,6 +401,26 @@ class MultilingualSVOExtractor:
                 vals = _as_str_list(value)
                 if vals:
                     self.default_verb_candidates_by_lang[str(lang)] = vals
+
+        self.question_patterns_by_lang: dict[str, list[str]] = {
+            str(k): [str(x) for x in v] for k, v in QUESTION_PATTERNS_BY_LANG.items()
+        }
+        cfg_q_patterns = self.rules_config.get("question_patterns_by_lang", {})
+        if isinstance(cfg_q_patterns, dict):
+            for lang, patterns in cfg_q_patterns.items():
+                vals = _as_str_list(patterns)
+                if vals:
+                    self.question_patterns_by_lang[str(lang)] = vals
+
+        self.query_verb_by_lang: dict[str, list[str]] = {
+            str(k): [str(v)] for k, v in QUERY_VERB_BY_LANG.items()
+        }
+        cfg_query_verbs = self.rules_config.get("query_verb_by_lang", {})
+        if isinstance(cfg_query_verbs, dict):
+            for lang, value in cfg_query_verbs.items():
+                vals = _as_str_list(value)
+                if vals:
+                    self.query_verb_by_lang[str(lang)] = vals
 
         self.default_object_candidates_by_lang: dict[str, list[str]] = {
             str(k): [str(v)] for k, v in DEFAULT_OBJECT_BY_LANG.items()
@@ -554,6 +580,17 @@ class MultilingualSVOExtractor:
                     base = dict(self.object_phrase_fallback_by_lang.get(str(lang), {}))
                     base.update(rule_obj)
                     self.object_phrase_fallback_by_lang[str(lang)] = base
+
+        self.object_bare_phrase_fallback_by_lang = {
+            str(k): dict(v) for k, v in OBJECT_BARE_PHRASE_FALLBACK_BY_LANG.items()
+        }
+        cfg_bare_object = self.rules_config.get("object_bare_phrase_fallback_by_lang", {})
+        if isinstance(cfg_bare_object, dict):
+            for lang, rule_obj in cfg_bare_object.items():
+                if isinstance(rule_obj, dict):
+                    base = dict(self.object_bare_phrase_fallback_by_lang.get(str(lang), {}))
+                    base.update(rule_obj)
+                    self.object_bare_phrase_fallback_by_lang[str(lang)] = base
 
         self.additional_condition_patterns_by_lang = {
             k: list(v) for k, v in ADDITIONAL_CONDITION_PATTERNS_BY_LANG.items()
@@ -802,12 +839,79 @@ class MultilingualSVOExtractor:
         예시:
             self._pick_main_verb("Please send the report", "en") -> "send"
         """
-        return common_pick_main_verb(
+        picked = common_pick_main_verb(
             text=text,
             lang=lang,
             verb_patterns_by_lang=self.verb_patterns_by_lang,
             default_verb_candidates_by_lang=self.default_verb_candidates_by_lang,
         )
+        default_verb = self._pick_lang_value(self.default_verb_candidates_by_lang, lang, "en", "request")
+        if picked == default_verb:
+            patterns = self.question_patterns_by_lang.get(lang) or self.question_patterns_by_lang.get("en", [])
+            for patt in patterns:
+                try:
+                    if re.search(patt, text, flags=re.I if lang in {"en", "de", "fr"} else 0):
+                        return self._pick_lang_value(self.query_verb_by_lang, lang, "en", "query")
+                except re.error:
+                    continue
+            surface_verb = self._infer_surface_verb_on_fallback(text, lang)
+            if surface_verb:
+                return surface_verb
+        return picked
+
+    def _infer_surface_verb_on_fallback(self, text: str, lang: str) -> str:
+        """기본 동사 fallback 상황에서 원문 표면 술어를 최대한 그대로 반환합니다.
+
+        우선순위:
+            1) spaCy가 있으면 ROOT 토큰
+            2) 언어별 종결형/말미 토큰 휴리스틱
+        """
+        normalized = (text or "").strip()
+        if not normalized:
+            return ""
+
+        if self.spacy_nlp is not None:
+            try:
+                doc = self.spacy_nlp(normalized)
+                for tok in doc:
+                    if (tok.dep_ or "").upper() == "ROOT" and tok.text.strip():
+                        return tok.text.strip()
+                for tok in reversed(doc):
+                    if (tok.pos_ or "").upper() in {"VERB", "AUX"} and tok.text.strip():
+                        return tok.text.strip()
+            except Exception:
+                # POS/DEP가 없는 모델이어도 추출 파이프라인은 계속 유지한다.
+                pass
+
+        if lang == "ko":
+            tokens = re.findall(r"[가-힣]+", normalized)
+            if not tokens:
+                return ""
+            endings = (
+                "했습니다",
+                "하였다",
+                "했다",
+                "합니다",
+                "한다",
+                "됩니다",
+                "되었다",
+                "됐다",
+                "였습니다",
+                "였다",
+                "입니다",
+                "이다",
+            )
+            for tok in reversed(tokens):
+                if len(tok) >= 2 and tok.endswith(endings):
+                    return tok
+            return tokens[-1]
+
+        if lang in {"en", "de", "fr"}:
+            latin_tokens = re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ'-]+", normalized)
+            if latin_tokens:
+                return latin_tokens[-1]
+
+        return ""
 
     def _pick_object(self, text: str, lang: str = "ko") -> str:
         """detailed/object/fallback 규칙 계층으로 canonical object를 선택합니다.
@@ -830,7 +934,46 @@ class MultilingualSVOExtractor:
         if fallback_obj:
             return fallback_obj
 
+        bare = self._pick_bare_object_phrase_fallback(text, lang)
+        if bare:
+            return bare
+
         return self._pick_lang_value(self.default_object_candidates_by_lang, lang, "en", "request target")
+
+    def _pick_bare_object_phrase_fallback(self, text: str, lang: str) -> str:
+        """동사 없는 단문/명사구 입력에서 언어별 규칙로 object를 보존합니다."""
+        rule_obj = self.object_bare_phrase_fallback_by_lang.get(lang) or {}
+        if not isinstance(rule_obj, dict):
+            return ""
+
+        bare = re.sub(r"[\s\u3000]+", " ", text).strip()
+        bare = re.sub(r"[\.!?؟]+$", "", bare).strip()
+        if not bare:
+            return ""
+
+        max_length = int(rule_obj.get("max_length", 0) or 0)
+        if max_length > 0 and len(bare) > max_length:
+            return ""
+
+        allowed_pattern = str(rule_obj.get("allowed_pattern", "")).strip()
+        if allowed_pattern and not re.fullmatch(allowed_pattern, bare):
+            return ""
+
+        endings = [str(x).strip() for x in rule_obj.get("must_end_with", []) if str(x).strip()]
+        if endings:
+            matched = False
+            for patt in endings:
+                flags = re.I if lang in {"en", "de", "fr"} else 0
+                try:
+                    if re.search(patt, bare, flags=flags):
+                        matched = True
+                        break
+                except re.error:
+                    continue
+            if not matched:
+                return ""
+
+        return bare
 
     def _pick_detailed_object(self, text: str, lang: str) -> str:
         """canonical 정규화 전에 detailed object 구절을 추출합니다.
@@ -872,6 +1015,12 @@ class MultilingualSVOExtractor:
                 return "email"
             if re.search(r"\bmessages?\b", cand, flags=re.I):
                 return "message"
+
+        if lang == "ko":
+            if re.search(r"게시판\s*내용", cand):
+                return "게시판 내용"
+            if "게시판" in cand:
+                return "게시판"
 
         if lang == "de":
             if re.search(r"\b(chat[-\s]?nachrichten?)\b", cand, flags=re.I):
@@ -943,12 +1092,58 @@ class MultilingualSVOExtractor:
         topic_exclude = {str(x).strip().casefold() for x in rules.get("topic_exclude", []) if str(x).strip()}
         predicate_verbs = [str(x).strip() for x in rules.get("predicate_verb_keywords", []) if str(x).strip()]
         predicate_patterns = [str(x).strip() for x in rules.get("predicate_verb_patterns", []) if str(x).strip()]
+        priority_subject_patterns_raw = rules.get("priority_subject_patterns", [])
+        priority_subject_patterns: list[tuple[str, int]] = []
+        if isinstance(priority_subject_patterns_raw, list):
+            for item in priority_subject_patterns_raw:
+                if isinstance(item, str) and item.strip():
+                    priority_subject_patterns.append((item.strip(), 1))
+                elif isinstance(item, dict):
+                    patt = str(item.get("pattern", "")).strip()
+                    grp = int(item.get("group", 1) or 1)
+                    if patt:
+                        priority_subject_patterns.append((patt, grp))
+        subject_cleanup_regexes_raw = rules.get("subject_cleanup_regexes", [])
+        subject_cleanup_regexes: list[tuple[str, str]] = []
+        if isinstance(subject_cleanup_regexes_raw, list):
+            for item in subject_cleanup_regexes_raw:
+                if isinstance(item, list) and len(item) == 2:
+                    patt = str(item[0]).strip()
+                    repl = str(item[1])
+                    if patt:
+                        subject_cleanup_regexes.append((patt, repl))
+                elif isinstance(item, dict):
+                    patt = str(item.get("pattern", "")).strip()
+                    repl = str(item.get("replacement", ""))
+                    if patt:
+                        subject_cleanup_regexes.append((patt, repl))
         object_skip_values = {
             str(x).strip().casefold() for x in rules.get("object_skip_values", []) if str(x).strip()
         }
         suffix_overrides_raw = rules.get("object_suffix_subject_overrides", {})
         suffix_overrides = dict(suffix_overrides_raw) if isinstance(suffix_overrides_raw, dict) else {}
         allow_subject_from_object = _as_bool(rules.get("allow_subject_from_object", True), True)
+
+        def _normalize_subject_candidate(cand: str) -> str:
+            out = re.sub(r"\s+", " ", (cand or "").strip())
+            for patt, repl in subject_cleanup_regexes:
+                out = re.sub(patt, repl, out, flags=0).strip()
+            return out
+
+        for patt, grp in priority_subject_patterns:
+            try:
+                m = re.search(patt, text, flags=0)
+            except re.error:
+                continue
+            if not m:
+                continue
+            if m.lastindex and m.lastindex >= grp:
+                cand = m.group(grp).strip()
+            else:
+                cand = m.group(0).strip()
+            cand = _normalize_subject_candidate(cand)
+            if cand and cand.casefold() not in topic_exclude:
+                return cand
 
         if topic_pattern:
             try:
@@ -959,6 +1154,7 @@ class MultilingualSVOExtractor:
                         cand = matched.group(topic_group).strip()
                     else:
                         cand = matched.group(0).strip()
+                    cand = _normalize_subject_candidate(cand)
                     if cand and cand.casefold() not in topic_exclude:
                         return cand
             except re.error:
@@ -1130,7 +1326,13 @@ class MultilingualSVOExtractor:
         """동사 문맥(요약/전송)에 맞춰 action 스코프 엔티티를 추출합니다.
 
         Returns:
-            {"persons": set[str], "departments": set[str]} 형태의 엔티티 맵.
+            {
+              "persons": set[str],
+              "departments": set[str],
+              "sender_persons": set[str],
+              "receiver_persons": set[str],
+              "receiver_departments": set[str],
+            } 형태의 엔티티 맵.
         """
         return spacy_extract_action_scoped_entities_backend(self, text, verb_text)
 
@@ -1340,7 +1542,7 @@ def extract_one(
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
     use_guardrails: bool = False,
-    use_spacy_postprocess: bool = False,
+    use_spacy_postprocess: bool | None = None,
     spacy_model: str = "xx_ent_wiki_sm",
     litellm_api_base: str = "",
     litellm_api_key: str = "",
@@ -1403,7 +1605,7 @@ def extract_many(
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
     use_guardrails: bool = False,
-    use_spacy_postprocess: bool = False,
+    use_spacy_postprocess: bool | None = None,
     spacy_model: str = "xx_ent_wiki_sm",
     litellm_api_base: str = "",
     litellm_api_key: str = "",
@@ -1454,7 +1656,7 @@ def extract_by_verb(
     ollama_base_url: str = "http://localhost:11434",
     use_instructor: bool = False,
     use_guardrails: bool = False,
-    use_spacy_postprocess: bool = False,
+    use_spacy_postprocess: bool | None = None,
     spacy_model: str = "xx_ent_wiki_sm",
     litellm_api_base: str = "",
     litellm_api_key: str = "",
@@ -1560,7 +1762,14 @@ def cli() -> None:
     parser.add_argument(
         "--use-spacy-postprocess",
         action="store_true",
+        default=None,
         help="Enable spaCy-based rule postprocessing for person/department/action corrections",
+    )
+    parser.add_argument(
+        "--no-spacy-postprocess",
+        dest="use_spacy_postprocess",
+        action="store_false",
+        help="Disable spaCy-based postprocessing",
     )
     parser.add_argument(
         "--spacy-model",

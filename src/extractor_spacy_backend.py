@@ -165,6 +165,14 @@ def build_spacy_single_payload(extractor: Any, text: str) -> dict[str, Any]:
         + extractor._extract_additional_conditions(text, lang)
         + extractor._spacy_refine_conditions([], text)
     )
+    scoped = extractor._extract_action_scoped_entities(text, verb)
+    for sender in sorted(scoped.get("sender_persons", set())):
+        conditions.append({"type": "sender", "text": sender})
+    for receiver in sorted(scoped.get("receiver_persons", set())):
+        conditions.append({"type": "receiver", "text": receiver})
+    for dep in sorted(scoped.get("receiver_departments", set())):
+        conditions.append({"type": "receiver_department", "text": dep})
+    conditions = extractor._dedupe_conditions(conditions)
     subject = extractor._pick_subject(text, lang, obj, verb)
     return {
         "language": lang,
@@ -211,19 +219,20 @@ def build_spacy_multi_payload(extractor: Any, text: str) -> dict[str, Any]:
         for p in sorted(sender_persons):
             first_conditions.append({"type": "person", "text": p})
         summarize_obj = extractor._pick_summarize_object(text, lang)
+        summarize_verb = extractor._pick_lang_value_by_text(
+            extractor.summarize_verb_by_lang,
+            lang,
+            text,
+            "en",
+            "summarize",
+            case_insensitive_langs={"en", "de", "fr"},
+        )
         for a in extractor._extract_object_action_modifiers(summarize_obj):
             first_conditions.append({"type": "action", "text": a})
         actions.append(
             {
-                "subject": extractor._pick_lang_value(extractor.subject_by_lang, lang, "en", "customer"),
-                "verb": extractor._pick_lang_value_by_text(
-                    extractor.summarize_verb_by_lang,
-                    lang,
-                    text,
-                    "en",
-                    "summarize",
-                    case_insensitive_langs={"en", "de", "fr"},
-                ),
+                "subject": extractor._pick_subject(text, lang, summarize_obj, summarize_verb),
+                "verb": summarize_verb,
                 "object": summarize_obj,
                 "conditions": extractor._dedupe_conditions(first_conditions),
             }
@@ -267,15 +276,16 @@ def build_spacy_multi_payload(extractor: Any, text: str) -> dict[str, Any]:
             send_verb = best_send_match[1]
 
         second_conditions = [*time_conds, *manner_conds, *extra_conds]
+        send_obj = extractor._pick_object(text, lang)
         for p in sorted(receiver_persons):
             second_conditions.append({"type": "person", "text": p})
         for d in sorted(receiver_departments):
             second_conditions.append({"type": "department", "text": d})
         actions.append(
             {
-                "subject": extractor._pick_lang_value(extractor.subject_by_lang, lang, "en", "customer"),
+                "subject": extractor._pick_subject(text, lang, send_obj, send_verb),
                 "verb": send_verb,
-                "object": extractor._pick_object(text, lang),
+                "object": send_obj,
                 "conditions": extractor._dedupe_conditions(second_conditions),
             }
         )
@@ -298,8 +308,14 @@ def extract_action_scoped_entities(extractor: Any, text: str, verb_text: str) ->
         text: 원문 요청 텍스트.
         verb_text: 현재 액션 문맥(예: summarize, send).
 
-    Returns:
-        {"persons": set[str], "departments": set[str]} 형태의 스코프 엔티티.
+        Returns:
+                {
+                    "persons": set[str],
+                    "departments": set[str],
+                    "sender_persons": set[str],
+                    "receiver_persons": set[str],
+                    "receiver_departments": set[str],
+                } 형태의 스코프 엔티티.
 
     예시:
         extract_action_scoped_entities(extractor, "... send to Alice and Sales team", "send")
@@ -380,10 +396,22 @@ def extract_action_scoped_entities(extractor: Any, text: str, verb_text: str) ->
             if re.search(suffix_pattern, cand):
                 cleaned_depts.append(cand)
         receiver_depts = cleaned_depts
+    elif lang == "ko":
+        # "이선정,홍길동에게"처럼 쉼표로 나열된 다중 수신자를 분해한다.
+        for m in re.finditer(r"([가-힣]{2,4}(?:\s*,\s*[가-힣]{2,4})+)\s*에게", text):
+            chunk = m.group(1).strip()
+            for token in re.split(r"\s*,\s*", chunk):
+                cand = token.strip()
+                if cand:
+                    receiver_names.append(cand)
 
     v = (verb_text or "").strip().lower()
     is_summarize = any(k in v for k in extractor.action_scope_verb_hints.get("summarize", []))
     is_send = any(k in v for k in extractor.action_scope_verb_hints.get("send", []))
+
+    sender_persons = {p for p in sender if p}
+    receiver_persons = {p for p in receiver_names if p}
+    receiver_departments = {d for d in receiver_depts if d}
 
     if is_summarize:
         persons.update([p for p in sender if p])
@@ -395,7 +423,13 @@ def extract_action_scoped_entities(extractor: Any, text: str, verb_text: str) ->
         persons.update([p for p in receiver_names if p])
         departments.update([d for d in receiver_depts if d])
 
-    return {"persons": persons, "departments": departments}
+    return {
+        "persons": persons,
+        "departments": departments,
+        "sender_persons": sender_persons,
+        "receiver_persons": receiver_persons,
+        "receiver_departments": receiver_departments,
+    }
 
 
 def extract_object_action_modifiers(extractor: Any, object_text: str) -> list[str]:
@@ -572,6 +606,10 @@ def spacy_refine_conditions(
         if not ctext:
             continue
 
+        if ctype in {"sender", "receiver", "receiver_department"}:
+            updated.append({"type": ctype, "text": ctext})
+            continue
+
         if ctext in signals["departments"]:
             ctype = "department"
         elif ctext in signals["persons"]:
@@ -604,5 +642,29 @@ def spacy_refine_conditions(
     for a in extract_object_action_modifiers(extractor, object_text):
         if a not in existing_texts:
             updated.append({"type": "action", "text": a})
+
+    lang = extractor._detect_language(text)
+    if lang == "ko":
+        person_texts = {
+            str(c.get("text", "")).strip()
+            for c in updated
+            if str(c.get("type", "")).strip() == "person" and str(c.get("text", "")).strip()
+        }
+        role_texts = {
+            str(c.get("text", "")).strip()
+            for c in updated
+            if str(c.get("type", "")).strip() in {"sender", "receiver", "receiver_department"}
+            and str(c.get("text", "")).strip()
+        }
+        normalized: list[dict] = []
+        for c in updated:
+            ctype = str(c.get("type", "")).strip()
+            ctext = str(c.get("text", "")).strip()
+            if ctype == "person" and ctext in role_texts:
+                continue
+            if ctype == "person" and ctext.endswith("이") and len(ctext) >= 3 and ctext[:-1] in person_texts:
+                continue
+            normalized.append(c)
+        updated = normalized
 
     return extractor._dedupe_conditions(updated)
